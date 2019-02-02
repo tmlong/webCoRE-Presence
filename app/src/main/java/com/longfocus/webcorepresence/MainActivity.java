@@ -1,10 +1,13 @@
 package com.longfocus.webcorepresence;
 
+import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
@@ -17,7 +20,6 @@ import com.longfocus.webcorepresence.dashboard.DashboardClient;
 import com.longfocus.webcorepresence.dashboard.Registration;
 import com.longfocus.webcorepresence.smartapp.dashboard.PresenceCreateTask;
 
-import static android.Manifest.permission;
 import static android.view.View.OnClickListener;
 
 public class MainActivity extends AppCompatActivity {
@@ -25,7 +27,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
 
     private static final String[] ACCESS_PERMISSIONS = {
-            permission.ACCESS_FINE_LOCATION
+            Manifest.permission.ACCESS_FINE_LOCATION
     };
 
     private static final int ACCESS_PERMISSIONS_REQUEST_CODE = 34;
@@ -76,18 +78,13 @@ public class MainActivity extends AppCompatActivity {
             setRegistration((Registration) savedInstanceState.getSerializable(REGISTRATION_KEY));
             setDeviceId(savedInstanceState.getString(DEVICE_ID_KEY));
 
-            Log.d(TAG, "onCreate() registration = " + getRegistration());
-            Log.d(TAG, "onCreate() deviceId = " + getDeviceId());
+            Log.d(TAG, "onCreate() registration: " + getRegistration());
+            Log.d(TAG, "onCreate() deviceId: " + getDeviceId());
         }
 
         initViews();
         initDashboard();
-
-        if (checkSelfPermission(permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            initLocation();
-        } else {
-            requestPermissions(ACCESS_PERMISSIONS, ACCESS_PERMISSIONS_REQUEST_CODE);
-        }
+        initLocation();
     }
 
     @Override
@@ -109,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
         switch (requestCode) {
             case ACCESS_PERMISSIONS_REQUEST_CODE:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    initLocation();
+                    startLocationService();
                 }
                 break;
         }
@@ -128,17 +125,40 @@ public class MainActivity extends AppCompatActivity {
 
         webView.getSettings().setJavaScriptEnabled(true);
 
-        if (!hasPresence()) {
-            webView.setWebViewClient(new DashboardClient(new DashboardCallback()));
-        }
-
+        webView.setWebViewClient(hasPresenceDevice() ? null : new DashboardClient(new DashboardCallback()));
         webView.loadUrl(DASHBOARD_URL);
     }
 
     private void initLocation() {
         Log.d(TAG, "initLocation()");
 
-        if (!hasPresence() || LocationService.isRunning()) return;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            final int permissionResult = checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION);
+
+            Log.d(TAG, "initLocation() permissionResult: " + permissionResult);
+
+            if (permissionResult == PackageManager.PERMISSION_GRANTED) {
+                startLocationService();
+            } else {
+                requestPermissions(ACCESS_PERMISSIONS, ACCESS_PERMISSIONS_REQUEST_CODE);
+            }
+        } else {
+            final int permissionResult = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
+
+            Log.d(TAG, "initLocation() permissionResult: " + permissionResult);
+
+            if (permissionResult == PackageManager.PERMISSION_GRANTED) {
+                startLocationService();
+            } else {
+                ActivityCompat.requestPermissions(this, ACCESS_PERMISSIONS, ACCESS_PERMISSIONS_REQUEST_CODE);
+            }
+        }
+    }
+
+    private void startLocationService() {
+        Log.d(TAG, "startLocationService()");
+
+        if (!isLocationServiceReady()) return;
 
         final Bundle extras = new Bundle();
         extras.putSerializable(REGISTRATION_KEY, getRegistration());
@@ -154,7 +174,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private boolean hasPresence() {
+    private boolean isLocationServiceReady() {
+        return (hasPresenceDevice() && !LocationService.isRunning());
+    }
+
+    private boolean hasPresenceDevice() {
         return !TextUtils.isEmpty(getDeviceId());
     }
 
@@ -176,6 +200,7 @@ public class MainActivity extends AppCompatActivity {
                 public void run() {
                     button.setEnabled(true);
                     button.setOnClickListener(new OnClickListener() {
+
                         public void onClick(final View v) {
                             Log.d(TAG, "onClick()");
 
