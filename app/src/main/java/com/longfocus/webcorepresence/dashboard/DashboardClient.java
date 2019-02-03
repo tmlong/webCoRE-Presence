@@ -9,7 +9,7 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-import com.longfocus.webcorepresence.MainActivity;
+import com.longfocus.webcorepresence.Callback;
 import com.longfocus.webcorepresence.UriMappingFactory;
 
 import java.io.IOException;
@@ -38,7 +38,7 @@ public class DashboardClient extends WebViewClient {
 
     private static final RequestBody EMPTY_BODY = RequestBody.create(null, new byte[0]);
 
-    public interface RegistrationCallback extends MainActivity.Callback<Registration> {
+    public interface RegistrationCallback extends Callback<Registration> {
     }
 
     private final OkHttpClient httpClient = new OkHttpClient();

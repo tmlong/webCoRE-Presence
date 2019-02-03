@@ -5,7 +5,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.google.gson.JsonParseException;
-import com.longfocus.webcorepresence.MainActivity;
+import com.longfocus.webcorepresence.Callback;
 import com.longfocus.webcorepresence.ParseUtils;
 import com.longfocus.webcorepresence.UriMappingFactory;
 import com.longfocus.webcorepresence.dashboard.Registration;
@@ -35,7 +35,7 @@ public class PresenceCreateTask  extends AsyncTask<String, Void, PresenceCreateT
         }
     }
 
-    public interface SuccessCallback extends MainActivity.Callback<Success> {
+    public interface SuccessCallback extends Callback<Success> {
     }
 
     private final OkHttpClient httpClient = new OkHttpClient();

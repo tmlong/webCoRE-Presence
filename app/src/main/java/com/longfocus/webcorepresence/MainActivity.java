@@ -18,6 +18,7 @@ import android.widget.EditText;
 
 import com.longfocus.webcorepresence.dashboard.DashboardClient;
 import com.longfocus.webcorepresence.dashboard.Registration;
+import com.longfocus.webcorepresence.location.LocationService;
 import com.longfocus.webcorepresence.smartapp.dashboard.PresenceCreateTask;
 
 import static android.view.View.OnClickListener;
@@ -37,15 +38,11 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String DASHBOARD_URL = "https://dashboard.webcore.co";
 
-    public interface Callback<S> {
-
-        void handle(S source);
-    }
-
     // Views
     private WebView webView;
-    private EditText editText;
-    private Button button;
+    private EditText editTextPresenceName;
+    private Button buttonInitPresence;
+    private Button buttonStopLocation;
 
     // State
     private Registration registration;
@@ -116,8 +113,9 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "initViews()");
 
         webView = findViewById(R.id.webView);
-        editText = findViewById(R.id.editText);
-        button = findViewById(R.id.button);
+        editTextPresenceName = findViewById(R.id.edit_presenceName);
+        buttonInitPresence = findViewById(R.id.button_initPresence);
+        buttonStopLocation = findViewById(R.id.button_stopLocation);
     }
 
     private void initDashboard() {
@@ -172,6 +170,15 @@ public class MainActivity extends AppCompatActivity {
         } else {
             startService(intent);
         }
+
+        buttonStopLocation.setOnClickListener(new OnClickListener() {
+
+            public void onClick(final View v) {
+                Log.d(TAG, "onClick()");
+
+                LocationService.getInstance().stopLocationUpdates();
+            }
+        });
     }
 
     private boolean isLocationServiceReady() {
@@ -198,13 +205,15 @@ public class MainActivity extends AppCompatActivity {
 
                 @Override
                 public void run() {
-                    button.setEnabled(true);
-                    button.setOnClickListener(new OnClickListener() {
+                    editTextPresenceName.setEnabled(true);
+
+                    buttonInitPresence.setEnabled(true);
+                    buttonInitPresence.setOnClickListener(new OnClickListener() {
 
                         public void onClick(final View v) {
                             Log.d(TAG, "onClick()");
 
-                            final String name = editText.getText().toString();
+                            final String name = editTextPresenceName.getText().toString();
 
                             new PresenceCreateTask(getRegistration(), new PresenceCreateCallback()).execute(name);
                         }

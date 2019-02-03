@@ -19,7 +19,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <service android:name=".LocationService" />
+        <service android:name=".location.LocationService" />
+        <receiver android:name=".location.LocationReceiver" android:exported="true">
+            <intent-filter>
+                <action android:name="longfocus.intent.action.LOCATION_STOP"/>
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
