@@ -1,13 +1,17 @@
 package com.longfocus.webcorepresence;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
@@ -18,6 +22,7 @@ import android.widget.EditText;
 
 import com.longfocus.webcorepresence.dashboard.DashboardClient;
 import com.longfocus.webcorepresence.dashboard.Registration;
+import com.longfocus.webcorepresence.location.LocationReceiver;
 import com.longfocus.webcorepresence.location.LocationService;
 import com.longfocus.webcorepresence.smartapp.dashboard.PresenceCreateTask;
 
@@ -42,7 +47,10 @@ public class MainActivity extends AppCompatActivity {
     private WebView webView;
     private EditText editTextPresenceName;
     private Button buttonInitPresence;
-    private Button buttonStopLocation;
+    private Button buttonControlLocation;
+
+    // Events
+    private DefaultReceiver defaultReceiver;
 
     // State
     private Registration registration;
@@ -85,6 +93,30 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onResume() {
+        Log.d(TAG, "onResume()");
+
+        if (defaultReceiver == null) {
+            defaultReceiver = new DefaultReceiver();
+        }
+
+        registerLocationReceivers();
+
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        Log.d(TAG, "onPause()");
+
+        if (defaultReceiver != null) {
+            LocalBroadcastManager.getInstance(this).unregisterReceiver(defaultReceiver);
+        }
+
+        super.onPause();
+    }
+
+    @Override
     protected void onSaveInstanceState(final Bundle outState) {
         Log.d(TAG, "onSaveInstanceState()");
 
@@ -115,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
         webView = findViewById(R.id.webView);
         editTextPresenceName = findViewById(R.id.edit_presenceName);
         buttonInitPresence = findViewById(R.id.button_initPresence);
-        buttonStopLocation = findViewById(R.id.button_stopLocation);
+        buttonControlLocation = findViewById(R.id.button_controlLocation);
     }
 
     private void initDashboard() {
@@ -171,14 +203,27 @@ public class MainActivity extends AppCompatActivity {
             startService(intent);
         }
 
-        buttonStopLocation.setOnClickListener(new OnClickListener() {
+        buttonControlLocation.setOnClickListener(new OnClickListener() {
 
+            @Override
             public void onClick(final View v) {
                 Log.d(TAG, "onClick()");
 
-                LocationService.getInstance().stopLocationUpdates();
+                if (LocationService.getInstance().isListening()) {
+                    LocationService.getInstance().stopLocationUpdates();
+                } else {
+                    LocationService.getInstance().startLocationUpdates();
+                }
             }
         });
+    }
+
+    private void registerLocationReceivers() {
+        final IntentFilter startIntentFilter = new IntentFilter(LocationReceiver.LOCATION_START_ACTION);
+        final IntentFilter stopIntentFilter = new IntentFilter(LocationReceiver.LOCATION_STOP_ACTION);
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(defaultReceiver, startIntentFilter);
+        LocalBroadcastManager.getInstance(this).registerReceiver(defaultReceiver, stopIntentFilter);
     }
 
     private boolean isLocationServiceReady() {
@@ -210,6 +255,7 @@ public class MainActivity extends AppCompatActivity {
                     buttonInitPresence.setEnabled(true);
                     buttonInitPresence.setOnClickListener(new OnClickListener() {
 
+                        @Override
                         public void onClick(final View v) {
                             Log.d(TAG, "onClick()");
 
@@ -234,6 +280,34 @@ public class MainActivity extends AppCompatActivity {
             setDeviceId(success.getDeviceId());
 
             initLocation();
+        }
+    }
+
+    private class DefaultReceiver extends BroadcastReceiver {
+
+        private static final String TAG = "DefaultReceiver";
+
+        @Override
+        public void onReceive(final Context context, final Intent intent) {
+            Log.d(TAG, "onReceive() intent action: " + intent.getAction());
+
+            if (LocationReceiver.LOCATION_START_ACTION.equals(intent.getAction())) {
+                runOnUiThread(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        buttonControlLocation.setText("Stop Location");
+                    }
+                });
+            } else if (LocationReceiver.LOCATION_STOP_ACTION.equals(intent.getAction())) {
+                runOnUiThread(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        buttonControlLocation.setText("Start Location");
+                    }
+                });
+            }
         }
     }
 }

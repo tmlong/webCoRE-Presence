@@ -7,12 +7,11 @@ import android.content.Intent;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
-import com.longfocus.webcorepresence.R;
-
 public class LocationReceiver extends BroadcastReceiver {
 
     private static final String TAG = "LocationReceiver";
 
+    public static final String LOCATION_START_ACTION = "longfocus.intent.action.LOCATION_START";
     public static final String LOCATION_STOP_ACTION = "longfocus.intent.action.LOCATION_STOP";
 
     @Override
@@ -20,6 +19,9 @@ public class LocationReceiver extends BroadcastReceiver {
         Log.d(TAG, "onReceive() intent action: " + intent.getAction());
 
         switch (intent.getAction()) {
+            case LOCATION_START_ACTION:
+                LocationService.getInstance().startLocationUpdates();
+                break;
             case LOCATION_STOP_ACTION:
                 LocationService.getInstance().stopLocationUpdates();
                 break;
@@ -34,7 +36,7 @@ public class LocationReceiver extends BroadcastReceiver {
 
         final PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
 
-        builder.addAction(R.drawable.common_full_open_on_phone, "Stop", pendingIntent);
+        builder.addAction(0, "Stop", pendingIntent);
 
         return intent;
     }

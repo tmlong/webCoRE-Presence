@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -22,6 +23,9 @@ import com.longfocus.webcorepresence.R;
 import com.longfocus.webcorepresence.dashboard.Registration;
 import com.longfocus.webcorepresence.smartapp.location.Location;
 import com.longfocus.webcorepresence.smartapp.location.UpdatedTask;
+
+import static com.longfocus.webcorepresence.location.LocationReceiver.LOCATION_START_ACTION;
+import static com.longfocus.webcorepresence.location.LocationReceiver.LOCATION_STOP_ACTION;
 
 public class LocationService extends Service {
 
@@ -34,7 +38,7 @@ public class LocationService extends Service {
 
     private static final String NOTIFICATION_CHANNEL_ID = "longfocus.service.location";
     private static final String NOTIFICATION_CHANNEL_NAME = "Location Service";
-    private static final String NOTIFICATION_CHANNEL_DESCRIPTION = "BlamoWamoYaKnow";
+    private static final String NOTIFICATION_CHANNEL_DESCRIPTION = "Listening for location updates.";
 
     private static LocationService INSTANCE;
 
@@ -42,6 +46,8 @@ public class LocationService extends Service {
     }
 
     class UpdatedLocationCallback implements LocationCallback {
+
+        private static final String TAG = "UpdatedLocationCallback";
 
         private final Registration registration;
         private final String deviceId;
@@ -53,6 +59,8 @@ public class LocationService extends Service {
 
         @Override
         public void handle(final android.location.Location location) {
+            Log.d(TAG, "handle()");
+
             final String locationJson = new Gson().toJson(Location.fromLocation(location));
 
             new UpdatedTask(registration).execute(deviceId, locationJson);
@@ -60,6 +68,8 @@ public class LocationService extends Service {
     }
 
     class LocationListener implements android.location.LocationListener {
+
+        private static final String TAG = "LocationListener";
 
         private final android.location.Location lastLocation;
         private final LocationCallback locationCallback;
@@ -118,20 +128,23 @@ public class LocationService extends Service {
     @Override
     public void onCreate() {
         Log.d(TAG, "onCreate()");
+
         super.onCreate();
 
         INSTANCE = this;
 
         initLocationManager();
-        startInForeground();
     }
 
     @Override
     public void onDestroy() {
         Log.d(TAG, "onDestroy()");
+
         super.onDestroy();
 
         INSTANCE = null;
+
+        stopLocationUpdates();
     }
 
     @Override
@@ -162,42 +175,72 @@ public class LocationService extends Service {
     @Override
     public IBinder onBind(final Intent intent) {
         Log.d(TAG, "onBind()");
+
         return null;
+    }
+
+    public boolean isListening() {
+        Log.d(TAG, "isListening()");
+
+        return (locationListener != null);
     }
 
     public void startLocationUpdates() {
         Log.d(TAG, "startLocationUpdates()");
 
-        if (locationListener == null) {
-            final UpdatedLocationCallback locationCallback = new UpdatedLocationCallback(registration, deviceId);
-            locationListener = new LocationListener(LocationManager.GPS_PROVIDER, locationCallback);
-        }
+        initLocationListener();
 
         try {
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, LOCATION_INTERVAL, LOCATION_DISTANCE, locationListener);
+
+            startInForeground();
+
+            notifyLocationUpdates("Location updates were started.", LOCATION_START_ACTION);
         } catch (SecurityException e) {
-            Log.e(TAG, "initLocationManager() app permission is not valid.", e);
+            Log.e(TAG, "startLocationUpdates() app permission is not valid.", e);
         } catch (IllegalArgumentException e) {
-            Log.e(TAG, "initLocationManager() gps provider is not valid.", e);
+            Log.e(TAG, "startLocationUpdates() gps provider is not valid.", e);
         }
     }
 
     public void stopLocationUpdates() {
         Log.d(TAG, "stopLocationUpdates()");
 
-        Toast.makeText(this, "webCoRE Presence location updates were stopped.", Toast.LENGTH_SHORT).show();
-
         locationManager.removeUpdates(locationListener);
 
+        locationListener = null;
+
         stopForeground(true);
-        stopSelf(NOTIFICATION_ID);
+
+        notifyLocationUpdates("Location updates were stopped.", LOCATION_STOP_ACTION);
+    }
+
+    private void notifyLocationUpdates(final String message, final String action) {
+        Log.d(TAG, "notifyLocationUpdates()");
+
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+
+        LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(action));
     }
 
     private void initLocationManager() {
         Log.d(TAG, "initLocationManager()");
 
         if (locationManager == null) {
+            Log.d(TAG, "initLocationManager() creating manager.");
+
             locationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
+        }
+    }
+
+    private void initLocationListener() {
+        Log.d(TAG, "initLocationListener()");
+
+        if (locationListener == null) {
+            Log.d(TAG, "initLocationListener() creating listener.");
+
+            final UpdatedLocationCallback locationCallback = new UpdatedLocationCallback(registration, deviceId);
+            locationListener = new LocationListener(LocationManager.GPS_PROVIDER, locationCallback);
         }
     }
 
@@ -210,7 +253,7 @@ public class LocationService extends Service {
 
     private void startInForeground() {
         final NotificationCompat.Builder builder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
-                .setSmallIcon(R.drawable.common_full_open_on_phone)
+                .setSmallIcon(R.drawable.ic_location_searching_black_24dp)
                 .setContentTitle("webCoRE Presence")
                 .setContentText("Listening for location updates every 15s.")
                 .setPriority(NotificationCompat.PRIORITY_LOW)
