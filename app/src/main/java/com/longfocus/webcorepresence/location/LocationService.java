@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.location.LocationManager;
 import android.os.Build;
-import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
@@ -16,22 +15,16 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.google.gson.Gson;
-import com.longfocus.webcorepresence.Callback;
 import com.longfocus.webcorepresence.MainActivity;
 import com.longfocus.webcorepresence.R;
 import com.longfocus.webcorepresence.dashboard.Registration;
-import com.longfocus.webcorepresence.smartapp.location.Location;
-import com.longfocus.webcorepresence.smartapp.location.UpdatedTask;
-
-import static com.longfocus.webcorepresence.location.LocationReceiver.LOCATION_START_ACTION;
-import static com.longfocus.webcorepresence.location.LocationReceiver.LOCATION_STOP_ACTION;
+import com.longfocus.webcorepresence.location.LocationReceiver.LocationAction;
 
 public class LocationService extends Service {
 
     private static final String TAG = "LocationService";
 
-    private static final long LOCATION_INTERVAL = 15000L;
+    private static final long LOCATION_INTERVAL = 10000L;
     private static final float LOCATION_DISTANCE = 0f;
 
     private static final int NOTIFICATION_ID = 1034;
@@ -41,73 +34,6 @@ public class LocationService extends Service {
     private static final String NOTIFICATION_CHANNEL_DESCRIPTION = "Listening for location updates.";
 
     private static LocationService INSTANCE;
-
-    interface LocationCallback extends Callback<android.location.Location> {
-    }
-
-    class UpdatedLocationCallback implements LocationCallback {
-
-        private static final String TAG = "UpdatedLocationCallback";
-
-        private final Registration registration;
-        private final String deviceId;
-
-        public UpdatedLocationCallback(final Registration registration, final String deviceId) {
-            this.registration = registration;
-            this.deviceId = deviceId;
-        }
-
-        @Override
-        public void handle(final android.location.Location location) {
-            Log.d(TAG, "handle()");
-
-            final String locationJson = new Gson().toJson(Location.fromLocation(location));
-
-            new UpdatedTask(registration).execute(deviceId, locationJson);
-        }
-    }
-
-    class LocationListener implements android.location.LocationListener {
-
-        private static final String TAG = "LocationListener";
-
-        private final android.location.Location lastLocation;
-        private final LocationCallback locationCallback;
-
-        public LocationListener(final String provider) {
-            this(provider, null);
-        }
-
-        public LocationListener(final String provider, final LocationCallback callback) {
-            Log.d(TAG, "LocationListener() provider: " + provider);
-
-            lastLocation = new android.location.Location(provider);
-            locationCallback = callback;
-        }
-
-        @Override
-        public void onLocationChanged(final android.location.Location location) {
-            Log.e(TAG, "onLocationChanged() location: " + location);
-
-            lastLocation.set(location);
-
-            if (locationCallback != null) {
-                locationCallback.handle(location);
-            }
-        }
-
-        @Override
-        public void onStatusChanged(final String provider, final int status, final Bundle extras) {
-        }
-
-        @Override
-        public void onProviderDisabled(final String provider) {
-        }
-
-        @Override
-        public void onProviderEnabled(final String provider) {
-        }
-    }
 
     // Extras
     private Registration registration;
@@ -129,6 +55,10 @@ public class LocationService extends Service {
     public void onCreate() {
         Log.d(TAG, "onCreate()");
 
+        if (isRunning()) {
+            throw new IllegalStateException("instance already exists.");
+        }
+
         super.onCreate();
 
         INSTANCE = this;
@@ -144,7 +74,7 @@ public class LocationService extends Service {
 
         INSTANCE = null;
 
-        stopLocationUpdates();
+        stopListening();
     }
 
     @Override
@@ -155,8 +85,6 @@ public class LocationService extends Service {
         if (intent == null) {
             Log.d(TAG, "onStartCommand() intent not available; stopping service.");
 
-            stopSelf();
-
             return START_STICKY_COMPATIBILITY;
         }
 
@@ -166,7 +94,7 @@ public class LocationService extends Service {
         Log.d(TAG, "onStartCommand() registration: " + registration);
         Log.d(TAG, "onStartCommand() deviceId: " + deviceId);
 
-        startLocationUpdates();
+        startListening();
 
         return super.onStartCommand(intent, flags, startId);
     }
@@ -185,8 +113,8 @@ public class LocationService extends Service {
         return (locationListener != null);
     }
 
-    public void startLocationUpdates() {
-        Log.d(TAG, "startLocationUpdates()");
+    public void startListening() {
+        Log.d(TAG, "startListening()");
 
         initLocationListener();
 
@@ -195,32 +123,34 @@ public class LocationService extends Service {
 
             startInForeground();
 
-            notifyLocationUpdates("Location updates were started.", LOCATION_START_ACTION);
+            notifyListening("Location updates were started.", LocationAction.START);
         } catch (SecurityException e) {
-            Log.e(TAG, "startLocationUpdates() app permission is not valid.", e);
+            Log.e(TAG, "startListening() app permission is not valid.", e);
         } catch (IllegalArgumentException e) {
-            Log.e(TAG, "startLocationUpdates() gps provider is not valid.", e);
+            Log.e(TAG, "startListening() gps provider is not valid.", e);
         }
     }
 
-    public void stopLocationUpdates() {
-        Log.d(TAG, "stopLocationUpdates()");
+    public void stopListening() {
+        Log.d(TAG, "stopListening()");
 
-        locationManager.removeUpdates(locationListener);
+        if (locationListener != null) {
+            locationManager.removeUpdates(locationListener);
 
-        locationListener = null;
+            locationListener = null;
+        }
 
         stopForeground(true);
 
-        notifyLocationUpdates("Location updates were stopped.", LOCATION_STOP_ACTION);
+        notifyListening("Location updates were stopped.", LocationAction.STOP);
     }
 
-    private void notifyLocationUpdates(final String message, final String action) {
+    private void notifyListening(final String message, final LocationAction action) {
         Log.d(TAG, "notifyLocationUpdates()");
 
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
 
-        LocalBroadcastManager.getInstance(this).sendBroadcast(new Intent(action));
+        LocalBroadcastManager.getInstance(this).sendBroadcast(action.asIntent());
     }
 
     private void initLocationManager() {

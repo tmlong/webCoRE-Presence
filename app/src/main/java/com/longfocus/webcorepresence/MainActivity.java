@@ -4,7 +4,6 @@ import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -22,7 +21,7 @@ import android.widget.EditText;
 
 import com.longfocus.webcorepresence.dashboard.DashboardClient;
 import com.longfocus.webcorepresence.dashboard.Registration;
-import com.longfocus.webcorepresence.location.LocationReceiver;
+import com.longfocus.webcorepresence.location.LocationReceiver.LocationAction;
 import com.longfocus.webcorepresence.location.LocationService;
 import com.longfocus.webcorepresence.smartapp.dashboard.PresenceCreateTask;
 
@@ -209,21 +208,22 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(final View v) {
                 Log.d(TAG, "onClick()");
 
-                if (LocationService.getInstance().isListening()) {
-                    LocationService.getInstance().stopLocationUpdates();
+                final LocationService locationService = LocationService.getInstance();
+
+                if (locationService.isListening()) {
+                    locationService.stopListening();
                 } else {
-                    LocationService.getInstance().startLocationUpdates();
+                    locationService.startListening();
                 }
             }
         });
     }
 
     private void registerLocationReceivers() {
-        final IntentFilter startIntentFilter = new IntentFilter(LocationReceiver.LOCATION_START_ACTION);
-        final IntentFilter stopIntentFilter = new IntentFilter(LocationReceiver.LOCATION_STOP_ACTION);
+        final LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this);
 
-        LocalBroadcastManager.getInstance(this).registerReceiver(defaultReceiver, startIntentFilter);
-        LocalBroadcastManager.getInstance(this).registerReceiver(defaultReceiver, stopIntentFilter);
+        broadcastManager.registerReceiver(defaultReceiver, LocationAction.START.asIntentFilter());
+        broadcastManager.registerReceiver(defaultReceiver, LocationAction.STOP.asIntentFilter());
     }
 
     private boolean isLocationServiceReady() {
@@ -291,23 +291,24 @@ public class MainActivity extends AppCompatActivity {
         public void onReceive(final Context context, final Intent intent) {
             Log.d(TAG, "onReceive() intent action: " + intent.getAction());
 
-            if (LocationReceiver.LOCATION_START_ACTION.equals(intent.getAction())) {
-                runOnUiThread(new Runnable() {
+            final LocationAction locationAction = LocationAction.fromName(intent.getAction());
 
-                    @Override
-                    public void run() {
-                        buttonControlLocation.setText("Stop Location");
-                    }
-                });
-            } else if (LocationReceiver.LOCATION_STOP_ACTION.equals(intent.getAction())) {
-                runOnUiThread(new Runnable() {
+            runOnUiThread(new Runnable() {
 
-                    @Override
-                    public void run() {
-                        buttonControlLocation.setText("Start Location");
+                @Override
+                public void run() {
+                    buttonControlLocation.setText(getText());
+                }
+
+                private String getText() {
+                    switch (locationAction) {
+                        case START: return "Stop Location";
+                        case STOP: return "Start Location";
                     }
-                });
-            }
+
+                    throw new IllegalArgumentException("location action is not available.");
+                }
+            });
         }
     }
 }
