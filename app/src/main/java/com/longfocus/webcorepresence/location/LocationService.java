@@ -196,13 +196,16 @@ public class LocationService extends Service {
 
         final NotificationCompat.Builder builder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_location_searching_black_24dp)
-                .setContentTitle(appName)
                 .setContentText(contextText)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setContentIntent(getContentIntent())
                 .setAutoCancel(true);
 
         LocationReceiver.addStopAction(this, builder);
+
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
+            builder.setContentTitle(appName);
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             final CharSequence channelName = getString(R.string.location_channel_name);
