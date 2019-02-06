@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String DASHBOARD_URL = "https://dashboard.webcore.co";
 
     // Views
-    private WebView webView;
+    private WebView webViewDashboard;
     private EditText editTextPresenceName;
     private Button buttonInitPresence;
     private Button buttonControlLocation;
@@ -143,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
     private void initViews() {
         Log.d(TAG, "initViews()");
 
-        webView = findViewById(R.id.webView);
+        webViewDashboard = findViewById(R.id.webView_dashboard);
         editTextPresenceName = findViewById(R.id.edit_presenceName);
         buttonInitPresence = findViewById(R.id.button_initPresence);
         buttonControlLocation = findViewById(R.id.button_controlLocation);
@@ -152,10 +152,10 @@ public class MainActivity extends AppCompatActivity {
     private void initDashboard() {
         Log.d(TAG, "initDashboard()");
 
-        webView.getSettings().setJavaScriptEnabled(true);
+        webViewDashboard.getSettings().setJavaScriptEnabled(true);
 
-        webView.setWebViewClient(hasPresenceDevice() ? null : new DashboardClient(new DashboardCallback()));
-        webView.loadUrl(DASHBOARD_URL);
+        webViewDashboard.setWebViewClient(hasPresenceDevice() ? null : new DashboardClient(new DashboardCallback()));
+        webViewDashboard.loadUrl(DASHBOARD_URL);
     }
 
     private void initLocation() {
@@ -242,7 +242,7 @@ public class MainActivity extends AppCompatActivity {
         public void handle(final Registration registration) {
             Log.d(TAG, "handle() registration: " + registration);
 
-            webView.setWebViewClient(null);
+            webViewDashboard.setWebViewClient(null);
 
             setRegistration(registration);
 
@@ -302,8 +302,8 @@ public class MainActivity extends AppCompatActivity {
 
                 private String getText() {
                     switch (locationAction) {
-                        case START: return "Stop Location";
-                        case STOP: return "Start Location";
+                        case START: return getString(R.string.stop_location);
+                        case STOP: return getString(R.string.start_location);
                     }
 
                     throw new IllegalArgumentException("location action is not available.");

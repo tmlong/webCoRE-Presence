@@ -1,0 +1,9 @@
+<resources>
+    <string name="location_updates_started">Location updates were started.</string>
+    <string name="location_updates_stopped">Location updates were stopped.</string>
+
+    <string name="location_content_text">Listening for location updates every %ds.</string>
+
+    <string name="location_channel_name">Location Service</string>
+    <string name="location_channel_description">Listening for location updates.</string>
+</resources>

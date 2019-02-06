@@ -30,8 +30,6 @@ public class LocationService extends Service {
     private static final int NOTIFICATION_ID = 1034;
 
     private static final String NOTIFICATION_CHANNEL_ID = "longfocus.service.location";
-    private static final String NOTIFICATION_CHANNEL_NAME = "Location Service";
-    private static final String NOTIFICATION_CHANNEL_DESCRIPTION = "Listening for location updates.";
 
     private static LocationService INSTANCE;
 
@@ -56,7 +54,7 @@ public class LocationService extends Service {
         Log.d(TAG, "onCreate()");
 
         if (isRunning()) {
-            throw new IllegalStateException("instance already exists.");
+            throw new IllegalStateException("location service instance already exists.");
         }
 
         super.onCreate();
@@ -123,7 +121,7 @@ public class LocationService extends Service {
 
             startInForeground();
 
-            notifyListening("Location updates were started.", LocationAction.START);
+            notifyListening(LocationAction.START);
         } catch (SecurityException e) {
             Log.e(TAG, "startListening() app permission is not valid.", e);
         } catch (IllegalArgumentException e) {
@@ -142,13 +140,20 @@ public class LocationService extends Service {
 
         stopForeground(true);
 
-        notifyListening("Location updates were stopped.", LocationAction.STOP);
+        notifyListening(LocationAction.STOP);
     }
 
-    private void notifyListening(final String message, final LocationAction action) {
+    private void notifyListening(final LocationAction action) {
         Log.d(TAG, "notifyLocationUpdates()");
 
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+        switch (action) {
+            case START:
+                Toast.makeText(this, getString(R.string.location_updates_started), Toast.LENGTH_SHORT).show();
+                break;
+            case STOP:
+                Toast.makeText(this, getString(R.string.location_updates_stopped), Toast.LENGTH_SHORT).show();
+                break;
+        }
 
         LocalBroadcastManager.getInstance(this).sendBroadcast(action.asIntent());
     }
@@ -175,6 +180,8 @@ public class LocationService extends Service {
     }
 
     private PendingIntent getContentIntent() {
+        Log.d(TAG, "getContentIntent()");
+
         final Intent intent = new Intent(this, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
 
@@ -182,10 +189,15 @@ public class LocationService extends Service {
     }
 
     private void startInForeground() {
+        Log.d(TAG, "startInForeground()");
+
+        final CharSequence appName = getString(R.string.app_name);
+        final CharSequence contextText = getString(R.string.location_content_text, (int) (LOCATION_INTERVAL / 1000));
+
         final NotificationCompat.Builder builder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_location_searching_black_24dp)
-                .setContentTitle("webCoRE Presence")
-                .setContentText("Listening for location updates every 15s.")
+                .setContentTitle(appName)
+                .setContentText(contextText)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setContentIntent(getContentIntent())
                 .setAutoCancel(true);
@@ -193,8 +205,11 @@ public class LocationService extends Service {
         LocationReceiver.addStopAction(this, builder);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            final NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, NOTIFICATION_CHANNEL_NAME, NotificationManager.IMPORTANCE_LOW);
-            channel.setDescription(NOTIFICATION_CHANNEL_DESCRIPTION);
+            final CharSequence channelName = getString(R.string.location_channel_name);
+            final String channelDescription = getString(R.string.location_channel_description);
+
+            final NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_LOW);
+            channel.setDescription(channelDescription);
 
             final NotificationManager notificationManager = getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(channel);
