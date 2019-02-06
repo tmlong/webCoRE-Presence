@@ -147,6 +147,26 @@ public class MainActivity extends AppCompatActivity {
         editTextPresenceName = findViewById(R.id.edit_presenceName);
         buttonInitPresence = findViewById(R.id.button_initPresence);
         buttonControlLocation = findViewById(R.id.button_controlLocation);
+
+        buttonControlLocation.setOnClickListener(new OnClickListener() {
+
+            @Override
+            public void onClick(final View v) {
+                Log.d(TAG, "onClick()");
+
+                final LocationService locationService = LocationService.getInstance();
+
+                if (locationService == null) {
+                    initLocation();
+                } else {
+                    if (locationService.isListening()) {
+                        locationService.stopListening();
+                    } else {
+                        locationService.startListening();
+                    }
+                }
+            }
+        });
     }
 
     private void initDashboard() {
@@ -201,22 +221,6 @@ public class MainActivity extends AppCompatActivity {
         } else {
             startService(intent);
         }
-
-        buttonControlLocation.setOnClickListener(new OnClickListener() {
-
-            @Override
-            public void onClick(final View v) {
-                Log.d(TAG, "onClick()");
-
-                final LocationService locationService = LocationService.getInstance();
-
-                if (locationService.isListening()) {
-                    locationService.stopListening();
-                } else {
-                    locationService.startListening();
-                }
-            }
-        });
     }
 
     private void registerLocationReceivers() {
