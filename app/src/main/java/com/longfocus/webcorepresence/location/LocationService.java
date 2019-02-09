@@ -24,8 +24,8 @@ public class LocationService extends Service {
 
     private static final String TAG = "LocationService";
 
-    private static final long LOCATION_INTERVAL = 10000L;
-    private static final float LOCATION_DISTANCE = 0f;
+    private static final long LOCATION_INTERVAL = 5000L;
+    private static final float LOCATION_DISTANCE = 10f;
 
     private static final int NOTIFICATION_ID = 1034;
 
@@ -35,7 +35,6 @@ public class LocationService extends Service {
 
     // Extras
     private Registration registration;
-    private String deviceId;
 
     // Location
     private LocationManager locationManager;
@@ -86,11 +85,9 @@ public class LocationService extends Service {
             return START_STICKY_COMPATIBILITY;
         }
 
-        registration = (Registration) intent.getSerializableExtra("registration");
-        deviceId = intent.getStringExtra("deviceId");
+        registration = (Registration) intent.getSerializableExtra(Registration.KEY);
 
         Log.d(TAG, "onStartCommand() registration: " + registration);
-        Log.d(TAG, "onStartCommand() deviceId: " + deviceId);
 
         startListening();
 
@@ -174,7 +171,7 @@ public class LocationService extends Service {
         if (locationListener == null) {
             Log.d(TAG, "initLocationListener() creating listener.");
 
-            final UpdatedLocationCallback locationCallback = new UpdatedLocationCallback(registration, deviceId);
+            final UpdatedLocationCallback locationCallback = new UpdatedLocationCallback(registration);
             locationListener = new LocationListener(LocationManager.GPS_PROVIDER, locationCallback);
         }
     }

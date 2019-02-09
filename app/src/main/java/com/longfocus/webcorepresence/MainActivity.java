@@ -20,6 +20,7 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.longfocus.webcorepresence.dashboard.DashboardClient;
+import com.longfocus.webcorepresence.dashboard.DashboardInterface;
 import com.longfocus.webcorepresence.dashboard.Registration;
 import com.longfocus.webcorepresence.location.LocationReceiver.LocationAction;
 import com.longfocus.webcorepresence.location.LocationService;
@@ -37,8 +38,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int ACCESS_PERMISSIONS_REQUEST_CODE = 34;
 
-    private static final String REGISTRATION_KEY = "registration";
-    private static final String DEVICE_ID_KEY = "deviceId";
+    private static final String DASHBOARD_INTERFACE = "BridgeCommander";
 
     private static final String DASHBOARD_URL = "https://dashboard.webcore.co";
 
@@ -53,7 +53,6 @@ public class MainActivity extends AppCompatActivity {
 
     // State
     private Registration registration;
-    private String deviceId;
 
     public Registration getRegistration() {
         return registration;
@@ -61,14 +60,6 @@ public class MainActivity extends AppCompatActivity {
 
     public void setRegistration(final Registration registration) {
         this.registration = registration;
-    }
-
-    public String getDeviceId() {
-        return deviceId;
-    }
-
-    public void setDeviceId(final String deviceId) {
-        this.deviceId = deviceId;
     }
 
     @Override
@@ -79,11 +70,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         if (savedInstanceState != null) {
-            setRegistration((Registration) savedInstanceState.getSerializable(REGISTRATION_KEY));
-            setDeviceId(savedInstanceState.getString(DEVICE_ID_KEY));
+            setRegistration((Registration) savedInstanceState.getSerializable(Registration.KEY));
 
             Log.d(TAG, "onCreate() registration: " + getRegistration());
-            Log.d(TAG, "onCreate() deviceId: " + getDeviceId());
         }
 
         initViews();
@@ -122,8 +111,7 @@ public class MainActivity extends AppCompatActivity {
         super.onSaveInstanceState(outState);
 
         if (outState != null) {
-            outState.putSerializable(REGISTRATION_KEY, getRegistration());
-            outState.putSerializable(DEVICE_ID_KEY, getDeviceId());
+            outState.putSerializable(Registration.KEY, getRegistration());
         }
     }
 
@@ -174,7 +162,11 @@ public class MainActivity extends AppCompatActivity {
 
         webViewDashboard.getSettings().setJavaScriptEnabled(true);
 
-        webViewDashboard.setWebViewClient(hasPresenceDevice() ? null : new DashboardClient(new DashboardCallback()));
+        if (!hasPresenceDevice()) {
+            webViewDashboard.addJavascriptInterface(new DashboardInterface(new DashboardInterfaceCallback()), DASHBOARD_INTERFACE);
+            webViewDashboard.setWebViewClient(new DashboardClient(new DashboardCallback()));
+        }
+
         webViewDashboard.loadUrl(DASHBOARD_URL);
     }
 
@@ -210,8 +202,7 @@ public class MainActivity extends AppCompatActivity {
         if (!isLocationServiceReady()) return;
 
         final Bundle extras = new Bundle();
-        extras.putSerializable(REGISTRATION_KEY, getRegistration());
-        extras.putString(DEVICE_ID_KEY, getDeviceId());
+        extras.putSerializable(Registration.KEY, getRegistration());
 
         final Intent intent = new Intent(this, LocationService.class);
         intent.putExtras(extras);
@@ -235,7 +226,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean hasPresenceDevice() {
-        return !TextUtils.isEmpty(getDeviceId());
+        final Registration registration = getRegistration();
+        return (registration != null && !TextUtils.isEmpty(registration.getDeviceId()));
     }
 
     private class DashboardCallback implements DashboardClient.RegistrationCallback {
@@ -246,7 +238,14 @@ public class MainActivity extends AppCompatActivity {
         public void handle(final Registration registration) {
             Log.d(TAG, "handle() registration: " + registration);
 
-            webViewDashboard.setWebViewClient(null);
+            webViewDashboard.post(new Runnable() {
+
+                @Override
+                public void run() {
+                    webViewDashboard.removeJavascriptInterface(DASHBOARD_INTERFACE);
+                    webViewDashboard.setWebViewClient(null);
+                }
+            });
 
             setRegistration(registration);
 
@@ -273,6 +272,14 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private class DashboardInterfaceCallback implements DashboardInterface.RegistrationCallback {
+
+        @Override
+        public void handle(final Registration registration) {
+            new DashboardCallback().handle(registration);
+        }
+    }
+
     private class PresenceCreateCallback implements PresenceCreateTask.SuccessCallback {
 
         private static final String TAG = "PresenceCreateCallback";
@@ -281,7 +288,11 @@ public class MainActivity extends AppCompatActivity {
         public void handle(final PresenceCreateTask.Success success) {
             Log.d(TAG, "handle() success: " + success);
 
-            setDeviceId(success.getDeviceId());
+            if (registration == null) {
+                throw new IllegalStateException("registration has not been established.");
+            } else {
+                registration.setDeviceId(success.getDeviceId());
+            }
 
             initLocation();
         }

@@ -18,17 +18,20 @@ public class Registration implements Serializable {
     private static final String UUID_REGEX = "(.{8})(.{4})(.{4})(.{4})(.{12})";
     private static final String UUID_REPLACEMENT = "$1-$2-$3-$4-$5";
 
+    public static final String KEY = "registration";
+
     private String host;
     private String apiToken;
     private String appId;
     private String token;
+    private String deviceId;
 
     public static Registration decode(final String dataEncoded) {
-        Log.d(TAG, "decode() data (encoded) = " + dataEncoded);
+        Log.d(TAG, "decode() data (encoded): " + dataEncoded);
 
         final String data = new String(Base64.decode(dataEncoded, DEFAULT));
 
-        Log.d(TAG, "decode() data (decoded) = " + data);
+        Log.d(TAG, "decode() data (decoded): " + data);
 
         final int hostLength = data.length() - 32 * 2;
 
@@ -47,18 +50,20 @@ public class Registration implements Serializable {
         registration.setApiToken(uuid(token));
         registration.setAppId(uuid(id));
 
-        Log.d(TAG, "decode() host = " + registration.getHost());
-        Log.d(TAG, "decode() api token = " + registration.getApiToken());
-        Log.d(TAG, "decode() app id = " + registration.getAppId());
+        Log.d(TAG, "decode() host: " + registration.getHost());
+        Log.d(TAG, "decode() api token: " + registration.getApiToken());
+        Log.d(TAG, "decode() app id: " + registration.getAppId());
 
         return registration;
     }
 
     public static Registration decode(final Uri uri) {
+        Log.d(TAG, "decode() uri: " + uri);
+
         final List<String> pathSegments = uri.getPathSegments();
 
         if (pathSegments.isEmpty() || pathSegments.size() < 6) {
-            throw new IllegalArgumentException("The uri is not formatted properly: " + uri);
+            throw new IllegalArgumentException("uri is not formatted properly: " + uri);
         }
 
         //
@@ -72,10 +77,10 @@ public class Registration implements Serializable {
         registration.setAppId(pathSegments.get(5));
         registration.setToken(uri.getQueryParameter(UriMappingFactory.TOKEN_PARAM));
 
-        Log.d(TAG, "decode() host = " + registration.getHost());
-        Log.d(TAG, "decode() api token = " + registration.getApiToken());
-        Log.d(TAG, "decode() app id = " + registration.getAppId());
-        Log.d(TAG, "decode() token = " + registration.getToken());
+        Log.d(TAG, "decode() host: " + registration.getHost());
+        Log.d(TAG, "decode() api token: " + registration.getApiToken());
+        Log.d(TAG, "decode() app id: " + registration.getAppId());
+        Log.d(TAG, "decode() token: " + registration.getToken());
 
         return registration;
     }
@@ -114,6 +119,14 @@ public class Registration implements Serializable {
 
     public void setToken(final String token) {
         this.token = token;
+    }
+
+    public String getDeviceId() {
+        return deviceId;
+    }
+
+    public void setDeviceId(final String deviceId) {
+        this.deviceId = deviceId;
     }
 
     public Uri getUri() {

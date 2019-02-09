@@ -12,13 +12,11 @@ public class UpdatedLocationCallback implements LocationCallback {
     private static final String TAG = "UpdatedLocationCallback";
 
     private final Registration registration;
-    private final String deviceId;
 
-    public UpdatedLocationCallback(final Registration registration, final String deviceId) {
+    public UpdatedLocationCallback(final Registration registration) {
         Log.d(TAG, "UpdatedLocationCallback()");
 
         this.registration = registration;
-        this.deviceId = deviceId;
     }
 
     @Override
@@ -27,6 +25,6 @@ public class UpdatedLocationCallback implements LocationCallback {
 
         final String locationJson = new Gson().toJson(Location.fromLocation(location));
 
-        new UpdatedTask(registration).execute(deviceId, locationJson);
+        new UpdatedTask(registration).execute(registration.getDeviceId(), locationJson);
     }
 }

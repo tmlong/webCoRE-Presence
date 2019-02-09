@@ -36,6 +36,10 @@ public class ParseUtils {
         return getGson().fromJson(json, tClass);
     }
 
+    public static <T> String toJson(final T source) {
+        return getGson().toJson(source);
+    }
+
     public static String jsonCallback(final String callback, final String response) {
         return response.substring(callback.length() + 1, response.length() - 1);
     }
