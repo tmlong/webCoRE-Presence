@@ -9,7 +9,6 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-import com.longfocus.webcorepresence.Callback;
 import com.longfocus.webcorepresence.UriMappingFactory;
 
 import java.io.IOException;
@@ -27,7 +26,7 @@ import okio.BufferedSource;
 
 public class DashboardClient extends WebViewClient {
 
-    private static final String TAG = "DashboardClient";
+    private static final String TAG = DashboardClient.class.getSimpleName();
 
     private static final String API_HOST = "api.smartthings.com";
 
@@ -38,14 +37,11 @@ public class DashboardClient extends WebViewClient {
 
     private static final RequestBody EMPTY_BODY = RequestBody.create(null, new byte[0]);
 
-    public interface RegistrationCallback extends Callback<Registration> {
-    }
-
     private final OkHttpClient httpClient = new OkHttpClient();
 
-    private final RegistrationCallback callback;
+    private final Registration.Callback callback;
 
-    public DashboardClient(final RegistrationCallback callback) {
+    public DashboardClient(final Registration.Callback callback) {
         this.callback = callback;
     }
 

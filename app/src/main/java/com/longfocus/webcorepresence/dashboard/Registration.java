@@ -1,28 +1,40 @@
 package com.longfocus.webcorepresence.dashboard;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.Uri;
+import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Base64;
 import android.util.Log;
 
 import com.google.android.gms.location.Geofence;
+import com.longfocus.webcorepresence.ParseUtils;
 import com.longfocus.webcorepresence.UriMappingFactory;
+import com.longfocus.webcorepresence.dashboard.js.Place;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 import static android.util.Base64.DEFAULT;
+import static java.lang.String.format;
 
 public class Registration implements Serializable {
 
-    private static final String TAG = "Registration";
+    private static final String TAG = Registration.class.getSimpleName();
 
     private static final String UUID_REGEX = "(.{8})(.{4})(.{4})(.{4})(.{12})";
     private static final String UUID_REPLACEMENT = "$1-$2-$3-$4-$5";
 
+    private static final int GEOFENCE_EXPIRATION = -1;
     private static final int GEOFENCE_TRANSITIONS = Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_EXIT;
 
     public static final String KEY = "registration";
+
+    public interface Callback extends com.longfocus.webcorepresence.Callback<Registration> {
+    }
 
     private String host;
     private String apiToken;
@@ -32,7 +44,16 @@ public class Registration implements Serializable {
     private String deviceId;
     private Place[] places;
 
-    public static Registration decode(final String dataEncoded) {
+    @NonNull
+    public static Registration getInstance(@NonNull final Context context) {
+        final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        final String registrationJson = sharedPreferences.getString(KEY, "{}");
+
+        return ParseUtils.fromJson(registrationJson, Registration.class);
+    }
+
+    @NonNull
+    public static Registration decode(@Nullable final String dataEncoded) {
         Log.d(TAG, "decode() data (encoded): " + dataEncoded);
 
         final String data = new String(Base64.decode(dataEncoded, DEFAULT));
@@ -63,7 +84,8 @@ public class Registration implements Serializable {
         return registration;
     }
 
-    public static Registration decode(final Uri uri) {
+    @NonNull
+    public static Registration decode(@NonNull final Uri uri) {
         Log.d(TAG, "decode() uri: " + uri);
 
         final List<String> pathSegments = uri.getPathSegments();
@@ -151,6 +173,14 @@ public class Registration implements Serializable {
         this.places = places;
     }
 
+    public void save(@NonNull final Context context) {
+        final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        final SharedPreferences.Editor editor = sharedPreferences.edit();
+
+        editor.putString(KEY, ParseUtils.toJson(this));
+        editor.commit();
+    }
+
     public Uri getUri() {
         return new Uri.Builder()
                 .scheme("https")
@@ -164,12 +194,13 @@ public class Registration implements Serializable {
         final List<Geofence> geofences = new ArrayList<>();
 
         for (final Place place : getPlaces()) {
-            final String requestId = getInstanceId() + "|" + place.getId();
-            final double latitude = place.getPosition()[0];
-            final double longitude = place.getPosition()[1];
+            final String requestId = format("%s|%s", getInstanceId(), place.getId());
+            final double[] position = place.getP();
+            final double latitude = position[0];
+            final double longitude = position[1];
 
-            geofences.add(new Geofence.Builder().setRequestId(requestId + "|i").setCircularRegion(latitude, longitude, place.getInnerRadiusMeters()).setExpirationDuration(-1).setTransitionTypes(GEOFENCE_TRANSITIONS).build());
-            geofences.add(new Geofence.Builder().setRequestId(requestId + "|o").setCircularRegion(latitude, longitude, place.getOuterRadiusMeters()).setExpirationDuration(-1).setTransitionTypes(GEOFENCE_TRANSITIONS).build());
+            geofences.add(new Geofence.Builder().setRequestId(format("%s|i", requestId)).setCircularRegion(latitude, longitude, place.getI()).setExpirationDuration(GEOFENCE_EXPIRATION).setTransitionTypes(GEOFENCE_TRANSITIONS).build());
+            geofences.add(new Geofence.Builder().setRequestId(format("%s|o", requestId)).setCircularRegion(latitude, longitude, place.getO()).setExpirationDuration(GEOFENCE_EXPIRATION).setTransitionTypes(GEOFENCE_TRANSITIONS).build());
         }
 
         return geofences;

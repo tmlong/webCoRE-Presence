@@ -30,7 +30,7 @@ import static android.view.View.OnClickListener;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String TAG = "MainActivity";
+    private static final String TAG = MainActivity.class.getSimpleName();
 
     private static final String[] ACCESS_PERMISSIONS = {
             Manifest.permission.ACCESS_FINE_LOCATION
@@ -39,7 +39,6 @@ public class MainActivity extends AppCompatActivity {
     private static final int ACCESS_PERMISSIONS_REQUEST_CODE = 34;
 
     private static final String DASHBOARD_INTERFACE = "BridgeCommander";
-
     private static final String DASHBOARD_URL = "https://dashboard.webcore.co";
 
     // Views
@@ -163,7 +162,7 @@ public class MainActivity extends AppCompatActivity {
         webViewDashboard.getSettings().setJavaScriptEnabled(true);
 
         if (!hasPresenceDevice()) {
-            webViewDashboard.addJavascriptInterface(new DashboardInterface(new DashboardInterfaceCallback()), DASHBOARD_INTERFACE);
+            webViewDashboard.addJavascriptInterface(new DashboardInterface(this, new DashboardCallback()), DASHBOARD_INTERFACE);
             webViewDashboard.setWebViewClient(new DashboardClient(new DashboardCallback()));
         }
 
@@ -201,11 +200,8 @@ public class MainActivity extends AppCompatActivity {
 
         if (!isLocationServiceReady()) return;
 
-        final Bundle extras = new Bundle();
-        extras.putSerializable(Registration.KEY, getRegistration());
-
         final Intent intent = new Intent(this, LocationService.class);
-        intent.putExtras(extras);
+        intent.putExtra(Registration.KEY ,getRegistration());
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(intent);
@@ -230,7 +226,7 @@ public class MainActivity extends AppCompatActivity {
         return (registration != null && !TextUtils.isEmpty(registration.getDeviceId()));
     }
 
-    private class DashboardCallback implements DashboardClient.RegistrationCallback {
+    private class DashboardCallback implements Registration.Callback {
 
         private static final String TAG = "DashboardCallback";
 
@@ -269,14 +265,6 @@ public class MainActivity extends AppCompatActivity {
                     });
                 }
             });
-        }
-    }
-
-    private class DashboardInterfaceCallback implements DashboardInterface.RegistrationCallback {
-
-        @Override
-        public void handle(final Registration registration) {
-            new DashboardCallback().handle(registration);
         }
     }
 
