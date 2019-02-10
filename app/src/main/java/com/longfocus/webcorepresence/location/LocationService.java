@@ -15,14 +15,19 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.google.android.gms.location.GeofencingClient;
+import com.google.android.gms.location.GeofencingRequest;
+import com.google.android.gms.location.LocationServices;
+import com.longfocus.webcorepresence.GeofencingService;
 import com.longfocus.webcorepresence.MainActivity;
+import com.longfocus.webcorepresence.ParseUtils;
 import com.longfocus.webcorepresence.R;
 import com.longfocus.webcorepresence.dashboard.Registration;
 import com.longfocus.webcorepresence.location.LocationReceiver.LocationAction;
 
 public class LocationService extends Service {
 
-    private static final String TAG = "LocationService";
+    private static final String TAG = LocationService.class.getSimpleName();
 
     private static final long LOCATION_INTERVAL = 5000L;
     private static final float LOCATION_DISTANCE = 10f;
@@ -39,6 +44,10 @@ public class LocationService extends Service {
     // Location
     private LocationManager locationManager;
     private LocationListener locationListener;
+
+    // Geofencing
+    private GeofencingClient geofencingClient;
+    private PendingIntent geofencingPendingIntent;
 
     public static LocationService getInstance() {
         return INSTANCE;
@@ -116,6 +125,8 @@ public class LocationService extends Service {
         try {
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, LOCATION_INTERVAL, LOCATION_DISTANCE, locationListener);
 
+            startGeofencing();
+
             startInForeground();
 
             notifyListening(LocationAction.START);
@@ -134,6 +145,8 @@ public class LocationService extends Service {
 
             locationListener = null;
         }
+
+        stopGeofencing();
 
         stopForeground(true);
 
@@ -174,6 +187,42 @@ public class LocationService extends Service {
             final UpdatedLocationCallback locationCallback = new UpdatedLocationCallback(registration);
             locationListener = new LocationListener(LocationManager.GPS_PROVIDER, locationCallback);
         }
+    }
+
+    private void startGeofencing() throws SecurityException {
+        Log.d(TAG, "startGeofencing()");
+
+        geofencingClient = LocationServices.getGeofencingClient(this);
+        geofencingClient.addGeofences(getGeofencingRequest(), getGeofencePendingIntent());
+    }
+
+    private void stopGeofencing() {
+        Log.d(TAG, "stopGeofencing()");
+
+        geofencingClient.removeGeofences(geofencingPendingIntent);
+    }
+
+    private GeofencingRequest getGeofencingRequest() {
+        Log.d(TAG, "getGeofencingRequest()");
+
+        final GeofencingRequest.Builder builder = new GeofencingRequest.Builder();
+        builder.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER);
+        builder.addGeofences(registration.getGeofences());
+
+        return builder.build();
+    }
+
+    private PendingIntent getGeofencePendingIntent() {
+        Log.d(TAG, "getGeofencePendingIntent()");
+
+        if (geofencingPendingIntent == null) {
+            final Intent intent = new Intent(this, GeofencingService.class);
+            intent.putExtra(Registration.KEY, ParseUtils.toJson(registration));
+
+            geofencingPendingIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        }
+
+        return geofencingPendingIntent;
     }
 
     private PendingIntent getContentIntent() {

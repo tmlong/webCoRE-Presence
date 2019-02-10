@@ -4,9 +4,11 @@ import android.net.Uri;
 import android.util.Base64;
 import android.util.Log;
 
+import com.google.android.gms.location.Geofence;
 import com.longfocus.webcorepresence.UriMappingFactory;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 import static android.util.Base64.DEFAULT;
@@ -18,13 +20,17 @@ public class Registration implements Serializable {
     private static final String UUID_REGEX = "(.{8})(.{4})(.{4})(.{4})(.{12})";
     private static final String UUID_REPLACEMENT = "$1-$2-$3-$4-$5";
 
+    private static final int GEOFENCE_TRANSITIONS = Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_EXIT;
+
     public static final String KEY = "registration";
 
     private String host;
     private String apiToken;
     private String appId;
     private String token;
+    private String instanceId;
     private String deviceId;
+    private Place[] places;
 
     public static Registration decode(final String dataEncoded) {
         Log.d(TAG, "decode() data (encoded): " + dataEncoded);
@@ -121,12 +127,28 @@ public class Registration implements Serializable {
         this.token = token;
     }
 
+    public String getInstanceId() {
+        return instanceId;
+    }
+
+    public void setInstanceId(final String instanceId) {
+        this.instanceId = instanceId;
+    }
+
     public String getDeviceId() {
         return deviceId;
     }
 
     public void setDeviceId(final String deviceId) {
         this.deviceId = deviceId;
+    }
+
+    public Place[] getPlaces() {
+        return places;
+    }
+
+    public void setPlaces(final Place[] places) {
+        this.places = places;
     }
 
     public Uri getUri() {
@@ -136,5 +158,20 @@ public class Registration implements Serializable {
                 .path("/api/token/" + getApiToken() + "/smartapps/installations/" + getAppId())
                 .appendQueryParameter(UriMappingFactory.TOKEN_PARAM, getToken())
                 .build();
+    }
+
+    public List<Geofence> getGeofences() {
+        final List<Geofence> geofences = new ArrayList<>();
+
+        for (final Place place : getPlaces()) {
+            final String requestId = getInstanceId() + "|" + place.getId();
+            final double latitude = place.getPosition()[0];
+            final double longitude = place.getPosition()[1];
+
+            geofences.add(new Geofence.Builder().setRequestId(requestId + "|i").setCircularRegion(latitude, longitude, place.getInnerRadiusMeters()).setExpirationDuration(-1).setTransitionTypes(GEOFENCE_TRANSITIONS).build());
+            geofences.add(new Geofence.Builder().setRequestId(requestId + "|o").setCircularRegion(latitude, longitude, place.getOuterRadiusMeters()).setExpirationDuration(-1).setTransitionTypes(GEOFENCE_TRANSITIONS).build());
+        }
+
+        return geofences;
     }
 }
