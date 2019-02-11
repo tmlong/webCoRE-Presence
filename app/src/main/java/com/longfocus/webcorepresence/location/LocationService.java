@@ -18,9 +18,10 @@ import android.widget.Toast;
 import com.google.android.gms.location.GeofencingClient;
 import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationServices;
+import com.longfocus.webcorepresence.GeofencingReceiver;
+import com.longfocus.webcorepresence.GeofencingReceiver.GeofencingAction;
 import com.longfocus.webcorepresence.GeofencingService;
 import com.longfocus.webcorepresence.MainActivity;
-import com.longfocus.webcorepresence.ParseUtils;
 import com.longfocus.webcorepresence.R;
 import com.longfocus.webcorepresence.dashboard.Registration;
 import com.longfocus.webcorepresence.location.LocationReceiver.LocationAction;
@@ -38,15 +39,13 @@ public class LocationService extends Service {
 
     private static LocationService INSTANCE;
 
-    // Extras
-    private Registration registration;
-
     // Location
     private LocationManager locationManager;
     private LocationListener locationListener;
 
     // Geofencing
     private GeofencingClient geofencingClient;
+    private GeofencingReceiver geofencingReceiver;
     private PendingIntent geofencingPendingIntent;
 
     public static LocationService getInstance() {
@@ -55,6 +54,10 @@ public class LocationService extends Service {
 
     public static boolean isRunning() {
         return (INSTANCE != null);
+    }
+
+    private Registration getRegistration() {
+        return Registration.getInstance(this);
     }
 
     @Override
@@ -70,6 +73,7 @@ public class LocationService extends Service {
         INSTANCE = this;
 
         initLocationManager();
+        initGeofencingReceiver();
     }
 
     @Override
@@ -93,10 +97,6 @@ public class LocationService extends Service {
 
             return START_STICKY_COMPATIBILITY;
         }
-
-        registration = (Registration) intent.getSerializableExtra(Registration.KEY);
-
-        Log.d(TAG, "onStartCommand() registration: " + registration);
 
         startListening();
 
@@ -154,7 +154,7 @@ public class LocationService extends Service {
     }
 
     private void notifyListening(final LocationAction action) {
-        Log.d(TAG, "notifyLocationUpdates()");
+        Log.d(TAG, "notifyListening()");
 
         switch (action) {
             case START:
@@ -172,7 +172,7 @@ public class LocationService extends Service {
         Log.d(TAG, "initLocationManager()");
 
         if (locationManager == null) {
-            Log.d(TAG, "initLocationManager() creating manager.");
+            Log.d(TAG, "initLocationManager() creating manager...");
 
             locationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
         }
@@ -182,10 +182,18 @@ public class LocationService extends Service {
         Log.d(TAG, "initLocationListener()");
 
         if (locationListener == null) {
-            Log.d(TAG, "initLocationListener() creating listener.");
+            Log.d(TAG, "initLocationListener() creating listener...");
 
-            final UpdatedLocationCallback locationCallback = new UpdatedLocationCallback(registration);
+            final UpdatedLocationCallback locationCallback = new UpdatedLocationCallback(this);
             locationListener = new LocationListener(LocationManager.GPS_PROVIDER, locationCallback);
+        }
+    }
+
+    private void initGeofencingReceiver() {
+        Log.d(TAG, "initGeofencingReceiver()");
+
+        if (geofencingReceiver == null) {
+            geofencingReceiver = new GeofencingReceiver();
         }
     }
 
@@ -194,22 +202,32 @@ public class LocationService extends Service {
 
         geofencingClient = LocationServices.getGeofencingClient(this);
         geofencingClient.addGeofences(getGeofencingRequest(), getGeofencePendingIntent());
+
+        if (geofencingReceiver != null) {
+            final LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this);
+
+            broadcastManager.registerReceiver(geofencingReceiver, GeofencingAction.ENTER.asIntentFilter());
+            broadcastManager.registerReceiver(geofencingReceiver, GeofencingAction.EXIT.asIntentFilter());
+        }
     }
 
     private void stopGeofencing() {
         Log.d(TAG, "stopGeofencing()");
 
         geofencingClient.removeGeofences(geofencingPendingIntent);
+
+        if (geofencingReceiver != null) {
+            LocalBroadcastManager.getInstance(this).unregisterReceiver(geofencingReceiver);
+        }
     }
 
     private GeofencingRequest getGeofencingRequest() {
         Log.d(TAG, "getGeofencingRequest()");
 
-        final GeofencingRequest.Builder builder = new GeofencingRequest.Builder();
-        builder.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER);
-        builder.addGeofences(registration.getGeofences());
-
-        return builder.build();
+        return new GeofencingRequest.Builder()
+            .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
+            .addGeofences(getRegistration().getGeofences())
+            .build();
     }
 
     private PendingIntent getGeofencePendingIntent() {
@@ -217,7 +235,6 @@ public class LocationService extends Service {
 
         if (geofencingPendingIntent == null) {
             final Intent intent = new Intent(this, GeofencingService.class);
-            intent.putExtra(Registration.KEY, ParseUtils.toJson(registration));
 
             geofencingPendingIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         }

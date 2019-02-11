@@ -40,7 +40,7 @@ public class ExitedTask extends AsyncTask<String, Void, Void> {
         Log.d(TAG, "doInBackground() deviceId: " + deviceId);
         Log.d(TAG, "doInBackground() place: " + place);
 
-        final Uri uri = new UriMappingFactory(registration.getUri()).getLocationExited(deviceId, place);
+        final Uri uri = new UriMappingFactory(registration).getLocationExited(place);
 
         Log.d(TAG, "doInBackground() uri: " + uri);
 

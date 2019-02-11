@@ -41,6 +41,10 @@ public class ParseUtils {
     }
 
     public static String jsonCallback(final String callback, final String response) {
+        if (response.length() < callback.length()) {
+            return response;
+        }
+
         return response.substring(callback.length() + 1, response.length() - 1);
     }
 

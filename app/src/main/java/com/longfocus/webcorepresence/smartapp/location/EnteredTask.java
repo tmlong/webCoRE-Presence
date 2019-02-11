@@ -40,7 +40,7 @@ public class EnteredTask extends AsyncTask<String, Void, Void> {
         Log.d(TAG, "doInBackground() deviceId: " + deviceId);
         Log.d(TAG, "doInBackground() place: " + place);
 
-        final Uri uri = new UriMappingFactory(registration.getUri()).getLocationEntered(deviceId, place);
+        final Uri uri = new UriMappingFactory(registration).getLocationEntered(place);
 
         Log.d(TAG, "doInBackground() uri: " + uri);
 

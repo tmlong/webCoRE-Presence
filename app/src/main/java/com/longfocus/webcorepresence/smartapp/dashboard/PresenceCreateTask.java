@@ -60,7 +60,7 @@ public class PresenceCreateTask  extends AsyncTask<String, Void, PresenceCreateT
         Log.d(TAG, "doInBackground() token: " + token);
         Log.d(TAG, "doInBackground() name: " + name);
 
-        final Uri uri = new UriMappingFactory(registration.getUri()).getDashboardPresenceCreate(token, name);
+        final Uri uri = new UriMappingFactory(registration).getDashboardPresenceCreate(name);
 
         Log.d(TAG, "doInBackground() uri: " + uri);
 

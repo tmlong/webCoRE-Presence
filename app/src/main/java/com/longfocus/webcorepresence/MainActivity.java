@@ -50,29 +50,12 @@ public class MainActivity extends AppCompatActivity {
     // Events
     private DefaultReceiver defaultReceiver;
 
-    // State
-    private Registration registration;
-
-    public Registration getRegistration() {
-        return registration;
-    }
-
-    public void setRegistration(final Registration registration) {
-        this.registration = registration;
-    }
-
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         Log.d(TAG, "onCreate()");
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        if (savedInstanceState != null) {
-            setRegistration((Registration) savedInstanceState.getSerializable(Registration.KEY));
-
-            Log.d(TAG, "onCreate() registration: " + getRegistration());
-        }
 
         initViews();
         initDashboard();
@@ -101,17 +84,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
         super.onPause();
-    }
-
-    @Override
-    protected void onSaveInstanceState(final Bundle outState) {
-        Log.d(TAG, "onSaveInstanceState()");
-
-        super.onSaveInstanceState(outState);
-
-        if (outState != null) {
-            outState.putSerializable(Registration.KEY, getRegistration());
-        }
     }
 
     @Override
@@ -162,8 +134,8 @@ public class MainActivity extends AppCompatActivity {
         webViewDashboard.getSettings().setJavaScriptEnabled(true);
 
         if (!hasPresenceDevice()) {
-            webViewDashboard.addJavascriptInterface(new DashboardInterface(this, new DashboardCallback()), DASHBOARD_INTERFACE);
-            webViewDashboard.setWebViewClient(new DashboardClient(new DashboardCallback()));
+            webViewDashboard.addJavascriptInterface(new DashboardInterface(this, new DashboardCallback(this)), DASHBOARD_INTERFACE);
+            webViewDashboard.setWebViewClient(new DashboardClient(new DashboardCallback(this)));
         }
 
         webViewDashboard.loadUrl(DASHBOARD_URL);
@@ -201,7 +173,6 @@ public class MainActivity extends AppCompatActivity {
         if (!isLocationServiceReady()) return;
 
         final Intent intent = new Intent(this, LocationService.class);
-        intent.putExtra(Registration.KEY ,getRegistration());
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(intent);
@@ -222,13 +193,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean hasPresenceDevice() {
-        final Registration registration = getRegistration();
+        final Registration registration = Registration.getInstance(this);
         return (registration != null && !TextUtils.isEmpty(registration.getDeviceId()));
     }
 
     private class DashboardCallback implements Registration.Callback {
 
         private static final String TAG = "DashboardCallback";
+
+        private final Context context;
+
+        private DashboardCallback(final Context context) {
+            this.context = context;
+        }
 
         @Override
         public void handle(final Registration registration) {
@@ -242,8 +219,6 @@ public class MainActivity extends AppCompatActivity {
                     webViewDashboard.setWebViewClient(null);
                 }
             });
-
-            setRegistration(registration);
 
             runOnUiThread(new Runnable() {
 
@@ -260,7 +235,7 @@ public class MainActivity extends AppCompatActivity {
 
                             final String name = editTextPresenceName.getText().toString();
 
-                            new PresenceCreateTask(getRegistration(), new PresenceCreateCallback()).execute(name);
+                            new PresenceCreateTask(registration, new PresenceCreateCallback(context)).execute(name);
                         }
                     });
                 }
@@ -272,15 +247,19 @@ public class MainActivity extends AppCompatActivity {
 
         private static final String TAG = "PresenceCreateCallback";
 
+        private final Context context;
+
+        private PresenceCreateCallback(final Context context) {
+            this.context = context;
+        }
+
         @Override
         public void handle(final PresenceCreateTask.Success success) {
             Log.d(TAG, "handle() success: " + success);
 
-            if (registration == null) {
-                throw new IllegalStateException("registration has not been established.");
-            } else {
-                registration.setDeviceId(success.getDeviceId());
-            }
+            final Registration registration = Registration.getInstance(context);
+            registration.setDeviceId(success.getDeviceId());
+            registration.save(context);
 
             initLocation();
         }

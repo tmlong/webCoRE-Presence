@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
@@ -25,7 +26,13 @@ public class LocationReceiver extends BroadcastReceiver {
             this.text = text;
         }
 
-        public static LocationAction fromName(final String name) {
+        @Nullable
+        public static LocationAction fromIntent(@Nullable final Intent intent) {
+            return intent != null ? fromName(intent.getAction()) : null;
+        }
+
+        @Nullable
+        public static LocationAction fromName(@Nullable final String name) {
             for (final LocationAction action : values()) {
                 if (action.getName().equals(name)) {
                     return action;
@@ -56,7 +63,7 @@ public class LocationReceiver extends BroadcastReceiver {
     public void onReceive(final Context context, final Intent intent) {
         Log.d(TAG, "onReceive() intent action: " + intent.getAction());
 
-        final LocationAction locationAction = LocationAction.fromName(intent.getAction());
+        final LocationAction locationAction = LocationAction.fromIntent(intent);
 
         switch (locationAction) {
             case START:

@@ -186,7 +186,6 @@ public class Registration implements Serializable {
                 .scheme("https")
                 .authority(host)
                 .path("/api/token/" + getApiToken() + "/smartapps/installations/" + getAppId())
-                .appendQueryParameter(UriMappingFactory.TOKEN_PARAM, getToken())
                 .build();
     }
 

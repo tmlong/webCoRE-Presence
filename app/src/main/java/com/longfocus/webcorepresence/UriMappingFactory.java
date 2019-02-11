@@ -2,6 +2,8 @@ package com.longfocus.webcorepresence;
 
 import android.net.Uri;
 
+import com.longfocus.webcorepresence.dashboard.Registration;
+
 public class UriMappingFactory {
 
     private static final String DASHBOARD_LOAD_PATH = "intf/dashboard/load";
@@ -20,53 +22,47 @@ public class UriMappingFactory {
     public static final String LOCATION_PARAM = "location";
     public static final String CALLBACK_PARAM = "callback";
 
-    private Uri uri;
+    private final Registration registration;
 
-    public UriMappingFactory(final Uri uri) {
-        this.uri = uri;
+    public UriMappingFactory(final Registration registration) {
+        this.registration = registration;
     }
 
-    public Uri getDashboardLoad(final String token) {
-        return getBuilder(DASHBOARD_LOAD_PATH)
-                .appendQueryParameter(TOKEN_PARAM, token)
-                .build();
+    public Uri getDashboardLoad() {
+        return getBuilder(DASHBOARD_LOAD_PATH).build();
     }
 
-    public Uri getDashboardPresenceCreate(final String token, final String name) {
+    public Uri getDashboardPresenceCreate(final String name) {
         return getBuilder(DASHBOARD_PRESENCE_CREATE_PATH)
-                .appendQueryParameter(TOKEN_PARAM, token)
                 .appendQueryParameter(NAME_PARAM, name)
                 .build();
     }
 
-    public Uri getLocationEntered(final String device, final String place) {
-        return getLocation(LOCATION_ENTERED_PATH, device, place);
+    public Uri getLocationEntered(final String place) {
+        return getLocation(LOCATION_ENTERED_PATH, place);
     }
 
-    public Uri getLocationExited(final String device, final String place) {
-        return getLocation(LOCATION_EXITED_PATH, device, place);
+    public Uri getLocationExited(final String place) {
+        return getLocation(LOCATION_EXITED_PATH, place);
     }
 
-    public Uri getLocationUpdated(final String device, final String location) {
+    public Uri getLocationUpdated(final String location) {
         return getBuilder(LOCATION_UPDATED_PATH)
-                .appendQueryParameter(DEVICE_PARAM, device)
                 .appendQueryParameter(LOCATION_PARAM, location)
                 .build();
     }
 
-    private Uri getLocation(final String path, final String dni, final String place) {
+    private Uri getLocation(final String path, final String place) {
         return getBuilder(path)
-                .appendQueryParameter(DEVICE_PARAM, dni)
                 .appendQueryParameter(PLACE_PARAM, place)
                 .build();
     }
 
     private Uri.Builder getBuilder(final String path) {
-        return new Uri.Builder()
-                .scheme(uri.getScheme())
-                .authority(uri.getAuthority())
-                .path(uri.getPath())
+        return registration.getUri().buildUpon()
                 .appendEncodedPath(path)
-                .appendQueryParameter(CALLBACK_PARAM, CALLBACK_NAME);
+                .appendQueryParameter(CALLBACK_PARAM, CALLBACK_NAME)
+                .appendQueryParameter(TOKEN_PARAM, registration.getToken())
+                .appendQueryParameter(DEVICE_PARAM, registration.getDeviceId());
     }
 }

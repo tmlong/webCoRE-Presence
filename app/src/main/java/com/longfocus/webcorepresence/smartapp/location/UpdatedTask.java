@@ -36,7 +36,7 @@ public class UpdatedTask extends AsyncTask<String, Void, Void> {
         Log.d(TAG, "doInBackground() deviceId: " + deviceId);
         Log.d(TAG, "doInBackground() location: " + location);
 
-        final Uri uri = new UriMappingFactory(registration.getUri()).getLocationUpdated(deviceId, location);
+        final Uri uri = new UriMappingFactory(registration).getLocationUpdated(location);
 
         Log.d(TAG, "doInBackground() uri: " + uri);
 

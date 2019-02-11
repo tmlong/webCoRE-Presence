@@ -2,42 +2,24 @@ package com.longfocus.webcorepresence;
 
 import android.app.IntentService;
 import android.content.Intent;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingEvent;
-import com.longfocus.webcorepresence.dashboard.Registration;
-import com.longfocus.webcorepresence.location.EnteredLocationCallback;
-import com.longfocus.webcorepresence.location.ExitedLocationCallback;
+import com.longfocus.webcorepresence.GeofencingReceiver.GeofencingAction;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class GeofencingService extends IntentService {
 
     private static final String TAG = GeofencingService.class.getSimpleName();
 
     public GeofencingService() {
-        super("GeofencingService");
-    }
-
-    private Registration registration;
-
-    @Override
-    public int onStartCommand(@Nullable final Intent intent, final int flags, final int startId) {
-        Log.d(TAG, "onStartCommand() flags: " + flags);
-        Log.d(TAG, "onStartCommand() startId: " + startId);
-
-        if (intent == null) {
-            Log.d(TAG, "onStartCommand() intent not available; stopping service.");
-
-            return START_STICKY_COMPATIBILITY;
-        }
-
-        final String registrationJson = intent.getStringExtra(Registration.KEY);
-        registration = ParseUtils.fromJson(registrationJson, Registration.class);
-
-        Log.d(TAG, "onStartCommand() registration: " + registration);
-
-        return super.onStartCommand(intent, flags, startId);
+        super(TAG);
     }
 
     @Override
@@ -55,21 +37,28 @@ public class GeofencingService extends IntentService {
         }
 
         final int geofenceTransition = geofencingEvent.getGeofenceTransition();
+        final GeofencingAction geofencingAction = GeofencingAction.fromTransition(geofenceTransition);
 
-        Log.d(TAG, "onHandleIntent() geofence trans: "  + geofenceTransition);
+        if (geofencingAction != null) {
+            Log.d(TAG, "onHandleIntent() geofencing action: "  + geofencingAction);
 
-        if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER) {
-            Log.d(TAG, "onHandleIntent() geofence enter");
+            final Intent geofencingIntent = geofencingAction.asIntent();
+            geofencingIntent.putExtra(GeofencingReceiver.REQUEST_IDS_KEY, getRequestIds(geofencingEvent));
 
-            for (final Geofence geofence : geofencingEvent.getTriggeringGeofences()) {
-                new EnteredLocationCallback(registration).handle(geofence);
-            }
-        } else if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_EXIT) {
-            Log.d(TAG, "onHandleIntent() geofence exit");
-
-            for (final Geofence geofence : geofencingEvent.getTriggeringGeofences()) {
-                new ExitedLocationCallback(registration).handle(geofence);
-            }
+            LocalBroadcastManager.getInstance(this).sendBroadcast(geofencingIntent);
         }
+    }
+
+    @NonNull
+    private String[] getRequestIds(@NonNull final GeofencingEvent geofencingEvent) {
+        Log.d(TAG, "getRequestIds()");
+
+        final List<String> requestIds = new ArrayList<>();
+
+        for (final Geofence geofence : geofencingEvent.getTriggeringGeofences()) {
+            requestIds.add(geofence.getRequestId());
+        }
+
+        return requestIds.toArray(new String[requestIds.size()]);
     }
 }
