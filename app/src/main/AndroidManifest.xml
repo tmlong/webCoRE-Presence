@@ -26,7 +26,7 @@
                 <action android:name="longfocus.intent.action.LOCATION_STOP"/>
             </intent-filter>
         </receiver>
-        <service android:name=".GeofencingService"/>
+        <service android:name=".location.GeofencingService"/>
     </application>
 
 </manifest>

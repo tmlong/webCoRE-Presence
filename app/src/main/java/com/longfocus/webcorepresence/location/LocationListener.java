@@ -1,28 +1,30 @@
 package com.longfocus.webcorepresence.location;
 
+import android.location.Location;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 public class LocationListener implements android.location.LocationListener {
 
-    private static final String TAG = "LocationListener";
+    private static final String TAG = LocationListener.class.getSimpleName();
 
-    private final android.location.Location lastLocation;
+    private final Location lastLocation;
     private final LocationCallback callback;
 
-    public LocationListener(final String provider) {
-        this(provider, null);
+    public LocationListener(@NonNull final String provider) {
+        this(provider, new NoopLocationCallback());
     }
 
-    public LocationListener(final String provider, final LocationCallback callback) {
+    public LocationListener(@NonNull final String provider, @NonNull final LocationCallback callback) {
         Log.d(TAG, "LocationListener() provider: " + provider);
 
-        lastLocation = new android.location.Location(provider);
-        this.callback = callback != null ? callback : new NoopLocationCallback();
+        lastLocation = new Location(provider);
+        this.callback = callback;
     }
 
     @Override
-    public void onLocationChanged(final android.location.Location location) {
+    public void onLocationChanged(final Location location) {
         Log.e(TAG, "onLocationChanged() location: " + location);
 
         lastLocation.set(location);
@@ -39,9 +41,5 @@ public class LocationListener implements android.location.LocationListener {
 
     @Override
     public void onProviderEnabled(final String provider) {
-    }
-
-    public android.location.Location getLastLocation() {
-        return lastLocation;
     }
 }

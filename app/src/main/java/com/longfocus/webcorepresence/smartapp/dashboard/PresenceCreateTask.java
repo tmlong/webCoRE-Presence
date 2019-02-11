@@ -20,7 +20,7 @@ import okhttp3.Response;
 
 public class PresenceCreateTask  extends AsyncTask<String, Void, PresenceCreateTask.Success> {
 
-    private static final String TAG = "PresenceCreateTask";
+    private static final String TAG = PresenceCreateTask.class.getSimpleName();
 
     public class Success extends StatusResponse {
 

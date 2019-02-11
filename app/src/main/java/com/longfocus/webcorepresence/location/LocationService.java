@@ -18,12 +18,10 @@ import android.widget.Toast;
 import com.google.android.gms.location.GeofencingClient;
 import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationServices;
-import com.longfocus.webcorepresence.GeofencingReceiver;
-import com.longfocus.webcorepresence.GeofencingReceiver.GeofencingAction;
-import com.longfocus.webcorepresence.GeofencingService;
 import com.longfocus.webcorepresence.MainActivity;
 import com.longfocus.webcorepresence.R;
 import com.longfocus.webcorepresence.dashboard.Registration;
+import com.longfocus.webcorepresence.location.GeofencingReceiver.GeofencingAction;
 import com.longfocus.webcorepresence.location.LocationReceiver.LocationAction;
 
 public class LocationService extends Service {

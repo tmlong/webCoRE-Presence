@@ -1,4 +1,4 @@
-package com.longfocus.webcorepresence;
+package com.longfocus.webcorepresence.location;
 
 import android.app.IntentService;
 import android.content.Intent;
@@ -9,7 +9,7 @@ import android.util.Log;
 
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingEvent;
-import com.longfocus.webcorepresence.GeofencingReceiver.GeofencingAction;
+import com.longfocus.webcorepresence.location.GeofencingReceiver.GeofencingAction;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +40,7 @@ public class GeofencingService extends IntentService {
         final GeofencingAction geofencingAction = GeofencingAction.fromTransition(geofenceTransition);
 
         if (geofencingAction != null) {
-            Log.d(TAG, "onHandleIntent() geofencing action: "  + geofencingAction);
+            Log.d(TAG, "onHandleIntent() geofencing action: " + geofencingAction);
 
             final Intent geofencingIntent = geofencingAction.asIntent();
             geofencingIntent.putExtra(GeofencingReceiver.REQUEST_IDS_KEY, getRequestIds(geofencingEvent));

@@ -11,7 +11,7 @@ import android.util.Log;
 
 public class LocationReceiver extends BroadcastReceiver {
 
-    private static final String TAG = "LocationReceiver";
+    private static final String TAG = LocationReceiver.class.getSimpleName();
 
     public enum LocationAction {
 

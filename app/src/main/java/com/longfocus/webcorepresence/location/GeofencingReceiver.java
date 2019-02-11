@@ -1,4 +1,4 @@
-package com.longfocus.webcorepresence;
+package com.longfocus.webcorepresence.location;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

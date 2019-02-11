@@ -14,7 +14,7 @@ import okhttp3.Request;
 
 public class UpdatedTask extends AsyncTask<String, Void, Void> {
 
-    private static final String TAG = "UpdatedTask";
+    private static final String TAG = UpdatedTask.class.getSimpleName();
 
     private final OkHttpClient httpClient = new OkHttpClient();
 
