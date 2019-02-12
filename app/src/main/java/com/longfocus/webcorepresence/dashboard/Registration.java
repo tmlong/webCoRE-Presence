@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static android.util.Base64.DEFAULT;
-import static java.lang.String.format;
 
 public class Registration implements Serializable {
 
@@ -28,8 +27,8 @@ public class Registration implements Serializable {
     private static final String UUID_REGEX = "(.{8})(.{4})(.{4})(.{4})(.{12})";
     private static final String UUID_REPLACEMENT = "$1-$2-$3-$4-$5";
 
-    private static final int GEOFENCE_EXPIRATION = -1;
-    private static final int GEOFENCE_TRANSITIONS = Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_EXIT;
+    private static final String URI_SCHEME = "https";
+    private static final String URI_PATH_FORMAT = "/api/token/%s/smartapps/installations/%s";
 
     public static final String KEY = "registration";
 
@@ -46,8 +45,12 @@ public class Registration implements Serializable {
 
     @NonNull
     public static Registration getInstance(@NonNull final Context context) {
+        Log.d(TAG, "getInstance()");
+
         final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         final String registrationJson = sharedPreferences.getString(KEY, "{}");
+
+        Log.d(TAG, "getInstance() registration json: " + registrationJson);
 
         return ParseUtils.fromJson(registrationJson, Registration.class);
     }
@@ -174,6 +177,8 @@ public class Registration implements Serializable {
     }
 
     public void save(@NonNull final Context context) {
+        Log.d(TAG, "save()");
+
         final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         final SharedPreferences.Editor editor = sharedPreferences.edit();
 
@@ -181,25 +186,21 @@ public class Registration implements Serializable {
         editor.commit();
     }
 
+    @NonNull
     public Uri getUri() {
         return new Uri.Builder()
-                .scheme("https")
+                .scheme(URI_SCHEME)
                 .authority(host)
-                .path("/api/token/" + getApiToken() + "/smartapps/installations/" + getAppId())
+                .path(String.format(URI_PATH_FORMAT, getApiToken(), getAppId()))
                 .build();
     }
 
+    @NonNull
     public List<Geofence> getGeofences() {
         final List<Geofence> geofences = new ArrayList<>();
 
         for (final Place place : getPlaces()) {
-            final String requestId = format("%s|%s", getInstanceId(), place.getId());
-            final double[] position = place.getP();
-            final double latitude = position[0];
-            final double longitude = position[1];
-
-            geofences.add(new Geofence.Builder().setRequestId(format("%s|i", requestId)).setCircularRegion(latitude, longitude, place.getI()).setExpirationDuration(GEOFENCE_EXPIRATION).setTransitionTypes(GEOFENCE_TRANSITIONS).build());
-            geofences.add(new Geofence.Builder().setRequestId(format("%s|o", requestId)).setCircularRegion(latitude, longitude, place.getO()).setExpirationDuration(GEOFENCE_EXPIRATION).setTransitionTypes(GEOFENCE_TRANSITIONS).build());
+            geofences.addAll(place.getGeofences(getInstanceId()));
         }
 
         return geofences;

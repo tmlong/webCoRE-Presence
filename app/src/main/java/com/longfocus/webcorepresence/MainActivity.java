@@ -135,7 +135,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (!hasPresenceDevice()) {
             webViewDashboard.addJavascriptInterface(new DashboardInterface(this, new DashboardCallback(this)), DASHBOARD_INTERFACE);
-            webViewDashboard.setWebViewClient(new DashboardClient(new DashboardCallback(this)));
+            webViewDashboard.setWebViewClient(new DashboardClient(this, new DashboardCallback(this)));
         }
 
         webViewDashboard.loadUrl(DASHBOARD_URL);

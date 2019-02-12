@@ -1,5 +1,6 @@
 package com.longfocus.webcorepresence.dashboard;
 
+import android.content.Context;
 import android.net.Uri;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
@@ -39,9 +40,11 @@ public class DashboardClient extends WebViewClient {
 
     private final OkHttpClient httpClient = new OkHttpClient();
 
+    private final Context context;
     private final Registration.Callback callback;
 
-    public DashboardClient(final Registration.Callback callback) {
+    public DashboardClient(final Context context, final Registration.Callback callback) {
+        this.context = context;
         this.callback = callback;
     }
 
@@ -58,6 +61,7 @@ public class DashboardClient extends WebViewClient {
                 Log.d(TAG, "onLoadResource() found token query parameter.");
 
                 final Registration registration = Registration.decode(uri);
+                registration.save(context);
 
                 callback.handle(registration);
             }
@@ -102,6 +106,7 @@ public class DashboardClient extends WebViewClient {
 
             final String data = parseResponse(response);
             final Registration registration = Registration.decode(data);
+            registration.save(context);
 
             callback.handle(registration);
 

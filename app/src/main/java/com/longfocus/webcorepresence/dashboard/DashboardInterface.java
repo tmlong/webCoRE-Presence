@@ -40,11 +40,15 @@ public class DashboardInterface {
         Log.d(TAG, "getStatus() json: " + json);
 
         final StatusRequest statusRequest = ParseUtils.fromJson(json, StatusRequest.class);
-        Log.d(TAG, "getStatus() i: " + statusRequest.getI());
+
+        Log.d(TAG, "getStatus() request i: " + statusRequest.getI());
 
         final StatusResponse statusResponse = new StatusResponse();
         statusResponse.setDni(Secure.getString(context.getContentResolver(), Secure.ANDROID_ID));
         statusResponse.setS(Registration.getInstance(context).getDeviceId());
+
+        Log.d(TAG, "getStatus() response dni: " + statusResponse.getDni());
+        Log.d(TAG, "getStatus() response s: " + statusResponse.getS());
 
         return ParseUtils.toJson(statusResponse);
     }
@@ -54,6 +58,7 @@ public class DashboardInterface {
         Log.d(TAG, "register() json: " + json);
 
         final Register register = ParseUtils.fromJson(json, Register.class);
+
         Log.d(TAG, "register() e: " + register.getE());
         Log.d(TAG, "register() a: " + register.getA());
         Log.d(TAG, "register() i: " + register.getI());
@@ -74,6 +79,7 @@ public class DashboardInterface {
         Log.d(TAG, "update() json: " + json);
 
         final Update update = ParseUtils.fromJson(json, Update.class);
+
         Log.d(TAG, "update() i: " + update.getI());
 
         for (final Place place : update.getP()) {
