@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
@@ -79,11 +80,9 @@ public class GeofencingReceiver extends BroadcastReceiver {
         Log.d(TAG, "onReceive() intent action: " + intent.getAction());
 
         final GeofencingAction geofencingAction = GeofencingAction.fromIntent(intent);
-        final String[] requestIds = intent.getStringArrayExtra(REQUEST_IDS_KEY);
-        final Registration registration = Registration.getInstance(context);
-        final RequestTaskFactory requestTaskFactory = new RequestTaskFactory(registration);
+        final RequestTaskFactory requestTaskFactory = getRequestTaskFactory(context);
 
-        for (final String requestId : requestIds) {
+        for (final String requestId : getRequestIds(intent)) {
             switch (geofencingAction) {
                 case ENTER:
                     requestTaskFactory.locationEntered(requestId).execute();
@@ -93,5 +92,16 @@ public class GeofencingReceiver extends BroadcastReceiver {
                     break;
             }
         }
+    }
+
+    @NonNull
+    private String[] getRequestIds(@NonNull final Intent intent) {
+        return intent.getStringArrayExtra(REQUEST_IDS_KEY);
+    }
+
+    @NonNull
+    private RequestTaskFactory getRequestTaskFactory(@NonNull final Context context) {
+        final Registration registration = Registration.getInstance(context);
+        return new RequestTaskFactory(registration);
     }
 }

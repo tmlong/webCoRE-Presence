@@ -3,6 +3,7 @@ package com.longfocus.webcorepresence.location;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 public class LocationListener implements android.location.LocationListener {
@@ -13,10 +14,10 @@ public class LocationListener implements android.location.LocationListener {
     private final LocationCallback callback;
 
     public LocationListener(@NonNull final String provider) {
-        this(provider, new NoopLocationCallback());
+        this(provider, null);
     }
 
-    public LocationListener(@NonNull final String provider, @NonNull final LocationCallback callback) {
+    public LocationListener(@NonNull final String provider, @Nullable final LocationCallback callback) {
         Log.d(TAG, "LocationListener() provider: " + provider);
 
         lastLocation = new Location(provider);
@@ -28,7 +29,10 @@ public class LocationListener implements android.location.LocationListener {
         Log.e(TAG, "onLocationChanged() location: " + location);
 
         lastLocation.set(location);
-        callback.handle(location);
+
+        if (callback != null) {
+            callback.handle(location);
+        }
     }
 
     @Override

@@ -1,9 +1,10 @@
 package com.longfocus.webcorepresence.location;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
-import com.google.gson.Gson;
+import com.longfocus.webcorepresence.ParseUtils;
 import com.longfocus.webcorepresence.dashboard.Registration;
 import com.longfocus.webcorepresence.smartapp.RequestTaskFactory;
 import com.longfocus.webcorepresence.smartapp.location.Location;
@@ -14,18 +15,25 @@ public class UpdatedLocationCallback implements LocationCallback {
 
     private final Context context;
 
-    public UpdatedLocationCallback(final Context context) {
+    public UpdatedLocationCallback(@NonNull final Context context) {
         this.context = context;
     }
 
     @Override
-    public void handle(final android.location.Location location) {
+    public void handle(@NonNull final android.location.Location location) {
         Log.d(TAG, "handle()");
 
-        final Registration registration = Registration.getInstance(context);
-        final RequestTaskFactory requestTaskFactory = new RequestTaskFactory(registration);
-        final String locationJson = new Gson().toJson(Location.fromLocation(location));
+        getRequestTaskFactory().locationUpdated(toParameter(location)).execute();
+    }
 
-        requestTaskFactory.locationUpdated(locationJson).execute();
+    @NonNull
+    private RequestTaskFactory getRequestTaskFactory() {
+        final Registration registration = Registration.getInstance(context);
+        return new RequestTaskFactory(registration);
+    }
+
+    @NonNull
+    private String toParameter(@NonNull final android.location.Location location) {
+        return ParseUtils.toJson(Location.fromLocation(location));
     }
 }
