@@ -1,4 +1,4 @@
-package com.longfocus.webcorepresence;
+package com.longfocus.webcorepresence.smartapp;
 
 import android.net.Uri;
 

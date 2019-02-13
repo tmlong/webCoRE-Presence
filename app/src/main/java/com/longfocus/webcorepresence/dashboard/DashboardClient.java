@@ -10,7 +10,7 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-import com.longfocus.webcorepresence.UriMappingFactory;
+import com.longfocus.webcorepresence.smartapp.UriMappingFactory;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;

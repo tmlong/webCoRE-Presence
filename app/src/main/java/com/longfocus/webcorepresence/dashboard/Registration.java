@@ -11,8 +11,8 @@ import android.util.Log;
 
 import com.google.android.gms.location.Geofence;
 import com.longfocus.webcorepresence.ParseUtils;
-import com.longfocus.webcorepresence.UriMappingFactory;
 import com.longfocus.webcorepresence.dashboard.js.Place;
+import com.longfocus.webcorepresence.smartapp.UriMappingFactory;
 
 import java.io.Serializable;
 import java.util.ArrayList;

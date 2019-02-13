@@ -7,7 +7,6 @@ import android.util.Log;
 
 import com.longfocus.webcorepresence.Callback;
 import com.longfocus.webcorepresence.ParseUtils;
-import com.longfocus.webcorepresence.UriMappingFactory;
 
 import java.io.IOException;
 

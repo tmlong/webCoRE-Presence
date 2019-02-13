@@ -7,10 +7,10 @@ import android.util.Log;
 import com.google.gson.JsonParseException;
 import com.longfocus.webcorepresence.Callback;
 import com.longfocus.webcorepresence.ParseUtils;
-import com.longfocus.webcorepresence.UriMappingFactory;
 import com.longfocus.webcorepresence.dashboard.Registration;
 import com.longfocus.webcorepresence.smartapp.ErrorResponse;
 import com.longfocus.webcorepresence.smartapp.StatusResponse;
+import com.longfocus.webcorepresence.smartapp.UriMappingFactory;
 
 import java.io.IOException;
 

@@ -4,8 +4,8 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.longfocus.webcorepresence.UriMappingFactory;
 import com.longfocus.webcorepresence.dashboard.Registration;
+import com.longfocus.webcorepresence.smartapp.UriMappingFactory;
 
 import java.io.IOException;
 

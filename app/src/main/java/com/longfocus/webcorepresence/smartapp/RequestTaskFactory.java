@@ -3,7 +3,6 @@ package com.longfocus.webcorepresence.smartapp;
 import android.content.Context;
 
 import com.longfocus.webcorepresence.ParseUtils;
-import com.longfocus.webcorepresence.UriMappingFactory;
 import com.longfocus.webcorepresence.dashboard.Registration;
 import com.longfocus.webcorepresence.smartapp.location.Location;
 
