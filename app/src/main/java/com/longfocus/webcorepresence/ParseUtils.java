@@ -1,5 +1,8 @@
 package com.longfocus.webcorepresence;
 
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializationContext;
@@ -12,10 +15,15 @@ import com.google.gson.internal.bind.ReflectiveTypeAdapterFactory;
 import com.google.gson.reflect.TypeToken;
 import com.longfocus.webcorepresence.smartapp.StatusCode;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import okhttp3.Response;
+import okhttp3.ResponseBody;
+import okio.BufferedSource;
 
 public class ParseUtils {
 
@@ -32,20 +40,36 @@ public class ParseUtils {
         return GSON;
     }
 
-    public static <T> T fromJson(final String json, final Class<T> tClass) {
+    @Nullable
+    public static <T> T fromJson(@Nullable final String json, @NonNull final Class<T> tClass) {
         return getGson().fromJson(json, tClass);
     }
 
-    public static <T> String toJson(final T source) {
+    @NonNull
+    public static <T> String toJson(@Nullable final T source) {
         return getGson().toJson(source);
     }
 
-    public static String jsonCallback(final String callback, final String response) {
+    @NonNull
+    public static String jsonCallback(@NonNull final String callback, @NonNull final String response) {
         if (response.length() < callback.length()) {
             return response;
         }
 
         return response.substring(callback.length() + 1, response.length() - 1);
+    }
+
+    @Nullable
+    public static String getData(@NonNull final Response response) throws IOException {
+        final ResponseBody body = response.body();
+        final BufferedSource source = body != null ? body.source() : null;
+
+        if (source != null) {
+            source.request(Integer.MAX_VALUE);
+            return source.buffer().snapshot().utf8();
+        }
+
+        return null;
     }
 
     static class ValidatorAdapterFactory implements TypeAdapterFactory {

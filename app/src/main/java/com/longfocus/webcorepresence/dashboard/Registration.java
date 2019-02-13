@@ -11,6 +11,9 @@ import android.util.Log;
 
 import com.google.android.gms.location.Geofence;
 import com.longfocus.webcorepresence.ParseUtils;
+import com.longfocus.webcorepresence.dashboard.client.Instance;
+import com.longfocus.webcorepresence.dashboard.client.Load;
+import com.longfocus.webcorepresence.dashboard.client.Settings;
 import com.longfocus.webcorepresence.dashboard.js.Place;
 import com.longfocus.webcorepresence.smartapp.UriMappingFactory;
 
@@ -80,9 +83,7 @@ public class Registration implements Serializable {
         registration.setApiToken(uuid(token));
         registration.setAppId(uuid(id));
 
-        Log.d(TAG, "decode() host: " + registration.getHost());
-        Log.d(TAG, "decode() api token: " + registration.getApiToken());
-        Log.d(TAG, "decode() app id: " + registration.getAppId());
+        Log.d(TAG, "decode() registration: " + registration);
 
         return registration;
     }
@@ -103,15 +104,39 @@ public class Registration implements Serializable {
         //
 
         final Registration registration = new Registration();
-        registration.setHost(uri.getAuthority());
+        registration.setHost(uri.getHost());
         registration.setApiToken(pathSegments.get(2));
         registration.setAppId(pathSegments.get(5));
         registration.setToken(uri.getQueryParameter(UriMappingFactory.TOKEN_PARAM));
 
-        Log.d(TAG, "decode() host: " + registration.getHost());
-        Log.d(TAG, "decode() api token: " + registration.getApiToken());
-        Log.d(TAG, "decode() app id: " + registration.getAppId());
-        Log.d(TAG, "decode() token: " + registration.getToken());
+        Log.d(TAG, "decode() registration: " + registration);
+
+        return registration;
+    }
+
+    @NonNull
+    public static Registration decode(@NonNull final Load load) {
+        Log.d(TAG, "decode() load: " + load);
+
+        final Instance instance = load.getInstance();
+
+        if (instance == null) {
+            throw new IllegalArgumentException("instance is not specified.");
+        }
+
+        final Uri uri = Uri.parse(instance.getUri());
+        final Registration registration = decode(uri);
+        registration.setInstanceId(instance.getId());
+
+        final Settings settings = instance.getSettings();
+
+        if (settings == null) {
+            throw new IllegalArgumentException("settings are not specified.");
+        }
+
+        registration.setPlaces(settings.getPlaces());
+
+        Log.d(TAG, "decode() registration: " + registration);
 
         return registration;
     }
@@ -203,6 +228,13 @@ public class Registration implements Serializable {
             geofences.addAll(place.getGeofences(getInstanceId()));
         }
 
+        Log.d(TAG, "getGeofences() geofences: " + geofences);
+
         return geofences;
+    }
+
+    @Override
+    public String toString() {
+        return ParseUtils.toJson(this);
     }
 }
