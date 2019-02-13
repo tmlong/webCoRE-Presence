@@ -61,9 +61,11 @@ public class LocationReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(final Context context, final Intent intent) {
-        Log.d(TAG, "onReceive() intent action: " + intent.getAction());
+        Log.d(TAG, "onReceive()");
 
         final LocationAction locationAction = LocationAction.fromIntent(intent);
+
+        Log.d(TAG, "onReceive() action: " + locationAction);
 
         switch (locationAction) {
             case START:

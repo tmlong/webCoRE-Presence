@@ -9,7 +9,6 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.google.android.gms.location.Geofence;
-import com.longfocus.webcorepresence.dashboard.Registration;
 import com.longfocus.webcorepresence.smartapp.RequestTaskFactory;
 
 public class GeofencingReceiver extends BroadcastReceiver {
@@ -77,10 +76,12 @@ public class GeofencingReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(final Context context, final Intent intent) {
-        Log.d(TAG, "onReceive() intent action: " + intent.getAction());
+        Log.d(TAG, "onReceive()");
 
         final GeofencingAction geofencingAction = GeofencingAction.fromIntent(intent);
-        final RequestTaskFactory requestTaskFactory = getRequestTaskFactory(context);
+        final RequestTaskFactory requestTaskFactory = RequestTaskFactory.getInstance(context);
+
+        Log.d(TAG, "onReceive() action: " + geofencingAction);
 
         for (final String requestId : getRequestIds(intent)) {
             switch (geofencingAction) {
@@ -96,12 +97,9 @@ public class GeofencingReceiver extends BroadcastReceiver {
 
     @NonNull
     private String[] getRequestIds(@NonNull final Intent intent) {
-        return intent.getStringArrayExtra(REQUEST_IDS_KEY);
-    }
+        Log.d(TAG, "getRequestIds()");
 
-    @NonNull
-    private RequestTaskFactory getRequestTaskFactory(@NonNull final Context context) {
-        final Registration registration = Registration.getInstance(context);
-        return new RequestTaskFactory(registration);
+        final String[] requestIds = intent.getStringArrayExtra(REQUEST_IDS_KEY);
+        return requestIds != null ? requestIds : new String[0];
     }
 }

@@ -19,7 +19,6 @@ public class Location {
         location.setLongitude(geoLocation.getLongitude());
         location.setAltitude(geoLocation.getAltitude());
         location.setHorizontalAccuracy(geoLocation.getAccuracy());
-//        location.setVerticalAccuracy(geoLocation.getVerticalAccuracyMeters());
         location.setSpeed(geoLocation.getSpeed());
         location.setBearing(geoLocation.getBearing());
 

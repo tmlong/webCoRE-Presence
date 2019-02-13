@@ -29,7 +29,7 @@ public class GeofencingService extends IntentService {
         final GeofencingEvent geofencingEvent = GeofencingEvent.fromIntent(intent);
 
         if (geofencingEvent == null) {
-            Log.e(TAG, "onHandleIntent() no geofencing event.");
+            Log.e(TAG, "onHandleIntent() no event.");
             return;
         } else if (geofencingEvent.hasError()) {
             Log.e(TAG, "onHandleIntent() error code: " + geofencingEvent.getErrorCode());
@@ -46,6 +46,8 @@ public class GeofencingService extends IntentService {
             geofencingIntent.putExtra(GeofencingReceiver.REQUEST_IDS_KEY, getRequestIds(geofencingEvent));
 
             LocalBroadcastManager.getInstance(this).sendBroadcast(geofencingIntent);
+        } else {
+            Log.e(TAG, "onHandleIntent() could not handle transition: " + geofenceTransition);
         }
     }
 
@@ -58,6 +60,8 @@ public class GeofencingService extends IntentService {
         for (final Geofence geofence : geofencingEvent.getTriggeringGeofences()) {
             requestIds.add(geofence.getRequestId());
         }
+
+        Log.d(TAG, "getRequestIds() size: " + requestIds.size());
 
         return requestIds.toArray(new String[requestIds.size()]);
     }

@@ -87,11 +87,10 @@ public class LocationService extends Service {
 
     @Override
     public int onStartCommand(final Intent intent, final int flags, final int startId) {
-        Log.d(TAG, "onStartCommand() flags: " + flags);
-        Log.d(TAG, "onStartCommand() startId: " + startId);
+        Log.d(TAG, "onStartCommand()");
 
         if (intent == null) {
-            Log.d(TAG, "onStartCommand() intent not available; stopping service.");
+            Log.w(TAG, "onStartCommand() intent not available; stopping service.");
 
             return START_STICKY_COMPATIBILITY;
         }
@@ -138,6 +137,12 @@ public class LocationService extends Service {
     public void stopListening() {
         Log.d(TAG, "stopListening()");
 
+        stopListening(false);
+    }
+
+    public void stopListening(final boolean removeNotification) {
+        Log.d(TAG, "stopListening() remove notification: " + removeNotification);
+
         if (locationListener != null) {
             locationManager.removeUpdates(locationListener);
 
@@ -146,7 +151,7 @@ public class LocationService extends Service {
 
         stopGeofencing();
 
-        stopForeground(true);
+        stopForeground(removeNotification);
 
         notifyListening(LocationAction.STOP);
     }
@@ -253,7 +258,7 @@ public class LocationService extends Service {
         Log.d(TAG, "startInForeground()");
 
         final CharSequence appName = getString(R.string.app_name);
-        final CharSequence contextText = getString(R.string.location_content_text, (int) (LOCATION_INTERVAL / 1000));
+        final CharSequence contextText = getString(R.string.location_listening_for_updates);
 
         final NotificationCompat.Builder builder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_location_searching_black_24dp)
@@ -269,8 +274,8 @@ public class LocationService extends Service {
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            final CharSequence channelName = getString(R.string.location_channel_name);
-            final String channelDescription = getString(R.string.location_channel_description);
+            final CharSequence channelName = getString(R.string.location_service);
+            final String channelDescription = getString(R.string.location_listening_for_updates);
 
             final NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_LOW);
             channel.setDescription(channelDescription);
