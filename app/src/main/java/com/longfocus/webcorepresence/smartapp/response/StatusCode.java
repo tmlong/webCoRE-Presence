@@ -1,4 +1,4 @@
-package com.longfocus.webcorepresence.smartapp;
+package com.longfocus.webcorepresence.smartapp.response;
 
 public enum StatusCode {
 

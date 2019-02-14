@@ -5,7 +5,7 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.longfocus.webcorepresence.smartapp.RequestTaskFactory;
-import com.longfocus.webcorepresence.smartapp.location.Location;
+import com.longfocus.webcorepresence.smartapp.request.Location;
 
 public class UpdatedLocationCallback implements LocationCallback {
 

@@ -1,10 +1,10 @@
-package com.longfocus.webcorepresence.smartapp;
+package com.longfocus.webcorepresence.smartapp.response;
 
-public class ErrorResponse {
+public class Error {
 
     private String name;
     private StatusCode error;
-    private String now;
+    private long now;
 
     public String getName() {
         return name;
@@ -22,11 +22,11 @@ public class ErrorResponse {
         this.error = error  ;
     }
 
-    public String getNow() {
+    public long getNow() {
         return now;
     }
 
-    public void setNow(final String now) {
+    public void setNow(final long now) {
         this.now = now;
     }
 }

@@ -13,7 +13,7 @@ import com.google.gson.TypeAdapter;
 import com.google.gson.TypeAdapterFactory;
 import com.google.gson.internal.bind.ReflectiveTypeAdapterFactory;
 import com.google.gson.reflect.TypeToken;
-import com.longfocus.webcorepresence.smartapp.StatusCode;
+import com.longfocus.webcorepresence.smartapp.response.StatusCode;
 
 import java.io.IOException;
 import java.lang.reflect.Field;

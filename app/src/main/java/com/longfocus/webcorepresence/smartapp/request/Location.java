@@ -1,4 +1,6 @@
-package com.longfocus.webcorepresence.smartapp.location;
+package com.longfocus.webcorepresence.smartapp.request;
+
+import android.support.annotation.NonNull;
 
 public class Location {
 
@@ -13,7 +15,8 @@ public class Location {
     private float speed;
     private float bearing;
 
-    public static Location fromLocation(final android.location.Location geoLocation) {
+    @NonNull
+    public static Location fromLocation(@NonNull final android.location.Location geoLocation) {
         final Location location = new Location();
         location.setLatitude(geoLocation.getLatitude());
         location.setLongitude(geoLocation.getLongitude());

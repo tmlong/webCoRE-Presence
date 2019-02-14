@@ -19,12 +19,16 @@ import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.google.gson.JsonParseException;
 import com.longfocus.webcorepresence.dashboard.DashboardClient;
 import com.longfocus.webcorepresence.dashboard.DashboardInterface;
 import com.longfocus.webcorepresence.dashboard.Registration;
 import com.longfocus.webcorepresence.location.LocationReceiver.LocationAction;
 import com.longfocus.webcorepresence.location.LocationService;
-import com.longfocus.webcorepresence.smartapp.dashboard.PresenceCreateTask;
+import com.longfocus.webcorepresence.smartapp.RequestTask;
+import com.longfocus.webcorepresence.smartapp.RequestTaskFactory;
+import com.longfocus.webcorepresence.smartapp.response.Error;
+import com.longfocus.webcorepresence.smartapp.response.Success;
 
 import static android.view.View.OnClickListener;
 
@@ -235,7 +239,8 @@ public class MainActivity extends AppCompatActivity {
 
                             final String name = editTextPresenceName.getText().toString();
 
-                            new PresenceCreateTask(registration, new PresenceCreateCallback(context)).execute(name);
+                            final RequestTaskFactory requestTaskFactory = RequestTaskFactory.getInstance(context);
+                            requestTaskFactory.dashboardPresenceCreate(new PresenceCreateCallback(context), name).execute();
                         }
                     });
                 }
@@ -243,7 +248,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private class PresenceCreateCallback implements PresenceCreateTask.SuccessCallback {
+    private class PresenceCreateCallback implements RequestTask.JsonCallback {
 
         private static final String TAG = "PresenceCreateCallback";
 
@@ -254,14 +259,25 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        public void handle(final PresenceCreateTask.Success success) {
-            Log.d(TAG, "handle() success: " + success);
+        public void handle(final String json) {
+            Log.d(TAG, "handle() json: " + json);
 
-            final Registration registration = Registration.getInstance(context);
-            registration.setDeviceId(success.getDeviceId());
-            registration.save(context);
+            try {
+                final Success success = ParseUtils.fromJson(json, Success.class);
 
-            initLocation();
+                Log.d(TAG, "handle() success: " + success);
+
+                final Registration registration = Registration.getInstance(context);
+                registration.setDeviceId(success.getDeviceId());
+                registration.save(context);
+
+                Log.d(TAG, "handle() registration: " + registration);
+
+                initLocation();
+            } catch (JsonParseException e) {
+                final Error error = ParseUtils.fromJson(json, Error.class);
+                Log.e(TAG, "handle() unable to parse the response: " + error.getError(), e);
+            }
         }
     }
 
@@ -271,9 +287,11 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onReceive(final Context context, final Intent intent) {
-            Log.d(TAG, "onReceive() intent action: " + intent.getAction());
+            Log.d(TAG, "onReceive()");
 
             final LocationAction locationAction = LocationAction.fromName(intent.getAction());
+
+            Log.d(TAG, "onReceive() action: " + locationAction);
 
             runOnUiThread(new Runnable() {
 
