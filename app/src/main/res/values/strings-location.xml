@@ -4,5 +4,5 @@
     <string name="location_updates_started">Location updates were started.</string>
     <string name="location_updates_stopped">Location updates were stopped.</string>
 
-    <string name="location_listening_for_updates">Listening for location updates.</string>
+    <string name="location_listening_for_updates">Listening for location updates...</string>
 </resources>

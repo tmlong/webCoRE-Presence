@@ -7,8 +7,10 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.location.LocationManager;
+import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
@@ -29,13 +31,15 @@ public class LocationService extends Service {
     private static final String TAG = LocationService.class.getSimpleName();
 
     private static final long LOCATION_INTERVAL = 30000L;
-    private static final float LOCATION_DISTANCE = 100f;
+    private static final float LOCATION_DISTANCE = 50f;
 
     private static final int NOTIFICATION_ID = 1034;
 
     private static final String NOTIFICATION_CHANNEL_ID = "longfocus.service.location";
 
     private static LocationService INSTANCE;
+
+    private final IBinder serviceBinder = new ServiceBinder();
 
     // Location
     private LocationManager locationManager;
@@ -46,12 +50,15 @@ public class LocationService extends Service {
     private GeofencingReceiver geofencingReceiver;
     private PendingIntent geofencingPendingIntent;
 
-    public static LocationService getInstance() {
-        return INSTANCE;
+    public class ServiceBinder extends Binder {
+
+        public LocationService getService() {
+            return LocationService.this;
+        }
     }
 
-    public static boolean isRunning() {
-        return (INSTANCE != null);
+    public static LocationService getInstance() {
+        return INSTANCE;
     }
 
     private Registration getRegistration() {
@@ -61,10 +68,6 @@ public class LocationService extends Service {
     @Override
     public void onCreate() {
         Log.d(TAG, "onCreate()");
-
-        if (isRunning()) {
-            throw new IllegalStateException("location service instance already exists.");
-        }
 
         super.onCreate();
 
@@ -95,7 +98,9 @@ public class LocationService extends Service {
             return START_STICKY_COMPATIBILITY;
         }
 
-        startListening();
+        if (!isListening()) {
+            startListening();
+        }
 
         return super.onStartCommand(intent, flags, startId);
     }
@@ -105,7 +110,7 @@ public class LocationService extends Service {
     public IBinder onBind(final Intent intent) {
         Log.d(TAG, "onBind()");
 
-        return null;
+        return serviceBinder;
     }
 
     public boolean isListening() {
@@ -126,7 +131,7 @@ public class LocationService extends Service {
 
             startInForeground();
 
-            notifyListening(LocationAction.START);
+            notifyListening(LocationAction.RESUME);
         } catch (SecurityException e) {
             Log.e(TAG, "startListening() app permission is not valid.", e);
         } catch (IllegalArgumentException e) {
@@ -151,19 +156,19 @@ public class LocationService extends Service {
 
         stopGeofencing();
 
-        stopForeground(removeNotification);
+        stopInForeground(removeNotification);
 
-        notifyListening(LocationAction.STOP);
+        notifyListening(LocationAction.PAUSE);
     }
 
-    private void notifyListening(final LocationAction action) {
+    private void notifyListening(@NonNull final LocationAction action) {
         Log.d(TAG, "notifyListening()");
 
         switch (action) {
-            case START:
+            case RESUME:
                 Toast.makeText(this, getString(R.string.location_updates_started), Toast.LENGTH_SHORT).show();
                 break;
-            case STOP:
+            case PAUSE:
                 Toast.makeText(this, getString(R.string.location_updates_stopped), Toast.LENGTH_SHORT).show();
                 break;
         }
@@ -224,6 +229,7 @@ public class LocationService extends Service {
         }
     }
 
+    @NonNull
     private GeofencingRequest getGeofencingRequest() {
         Log.d(TAG, "getGeofencingRequest()");
 
@@ -233,6 +239,7 @@ public class LocationService extends Service {
             .build();
     }
 
+    @NonNull
     private PendingIntent getGeofencePendingIntent() {
         Log.d(TAG, "getGeofencePendingIntent()");
 
@@ -245,6 +252,7 @@ public class LocationService extends Service {
         return geofencingPendingIntent;
     }
 
+    @NonNull
     private PendingIntent getContentIntent() {
         Log.d(TAG, "getContentIntent()");
 
@@ -257,6 +265,39 @@ public class LocationService extends Service {
     private void startInForeground() {
         Log.d(TAG, "startInForeground()");
 
+        final NotificationCompat.Builder builder = getBuilder();
+
+        LocationReceiver.addPauseAction(this, builder);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            final CharSequence channelName = getString(R.string.location_service);
+            final String channelDescription = getString(R.string.location_listening_for_updates);
+
+            final NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_LOW);
+            channel.setDescription(channelDescription);
+
+            getNotificationManager().createNotificationChannel(channel);
+        }
+
+        startForeground(NOTIFICATION_ID, builder.build());
+    }
+
+    private void stopInForeground(final boolean removeNotification) {
+        Log.d(TAG, "stopInForeground()");
+
+        final NotificationCompat.Builder builder = getBuilder();
+
+        LocationReceiver.addResumeAction(this, builder);
+
+        getNotificationManager().notify(NOTIFICATION_ID, builder.build());
+
+        stopForeground(removeNotification);
+    }
+
+    @NonNull
+    private NotificationCompat.Builder getBuilder() {
+        Log.d(TAG, "getBuilder()");
+
         final CharSequence appName = getString(R.string.app_name);
         final CharSequence contextText = getString(R.string.location_listening_for_updates);
 
@@ -267,23 +308,21 @@ public class LocationService extends Service {
                 .setContentIntent(getContentIntent())
                 .setAutoCancel(true);
 
-        LocationReceiver.addStopAction(this, builder);
-
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
             builder.setContentTitle(appName);
         }
 
+        return builder;
+    }
+
+    @NonNull
+    private NotificationManager getNotificationManager() {
+        Log.d(TAG, "getNotificationManager()");
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            final CharSequence channelName = getString(R.string.location_service);
-            final String channelDescription = getString(R.string.location_listening_for_updates);
-
-            final NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_LOW);
-            channel.setDescription(channelDescription);
-
-            final NotificationManager notificationManager = getSystemService(NotificationManager.class);
-            notificationManager.createNotificationChannel(channel);
+            return getSystemService(NotificationManager.class);
         }
 
-        startForeground(NOTIFICATION_ID, builder.build());
+        return (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
     }
 }

@@ -22,8 +22,8 @@
         <service android:name=".location.LocationService" />
         <receiver android:name=".location.LocationReceiver" android:exported="true">
             <intent-filter>
-                <action android:name="longfocus.intent.action.LOCATION_START"/>
-                <action android:name="longfocus.intent.action.LOCATION_STOP"/>
+                <action android:name="longfocus.intent.action.LOCATION_RESUME"/>
+                <action android:name="longfocus.intent.action.LOCATION_PAUSE"/>
             </intent-filter>
         </receiver>
         <service android:name=".location.GeofencingService"/>

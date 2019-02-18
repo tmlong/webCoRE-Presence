@@ -2,11 +2,14 @@ package com.longfocus.webcorepresence;
 
 import android.Manifest;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -45,6 +48,20 @@ public class MainActivity extends AppCompatActivity {
     private static final String DASHBOARD_INTERFACE = "BridgeCommander";
     private static final String DASHBOARD_URL = "https://dashboard.webcore.co";
 
+    private final ServiceConnection serviceConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(final ComponentName name, final IBinder service) {
+            final LocationService.ServiceBinder binder = (LocationService.ServiceBinder) service;
+            locationService = binder.getService();
+        }
+
+        @Override
+        public void onServiceDisconnected(final ComponentName name) {
+            locationService = null;
+        }
+    };
+
     // Views
     private WebView webViewDashboard;
     private EditText editTextPresenceName;
@@ -53,6 +70,9 @@ public class MainActivity extends AppCompatActivity {
 
     // Events
     private DefaultReceiver defaultReceiver;
+
+    // Services
+    private LocationService locationService;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -67,27 +87,32 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onDestroy() {
+        Log.d(TAG, "onDestroy()");
+
+        super.onDestroy();
+
+        if (serviceConnection != null) {
+            unbindService(serviceConnection);
+        }
+    }
+
+    @Override
     protected void onResume() {
         Log.d(TAG, "onResume()");
 
-        if (defaultReceiver == null) {
-            defaultReceiver = new DefaultReceiver();
-        }
+        super.onResume();
 
         registerLocationReceivers();
-
-        super.onResume();
     }
 
     @Override
     protected void onPause() {
         Log.d(TAG, "onPause()");
 
-        if (defaultReceiver != null) {
-            LocalBroadcastManager.getInstance(this).unregisterReceiver(defaultReceiver);
-        }
-
         super.onPause();
+
+        unregisterLocationReceivers();
     }
 
     @Override
@@ -106,18 +131,20 @@ public class MainActivity extends AppCompatActivity {
     private void initViews() {
         Log.d(TAG, "initViews()");
 
+        // views
         webViewDashboard = findViewById(R.id.webView_dashboard);
         editTextPresenceName = findViewById(R.id.edit_presenceName);
         buttonInitPresence = findViewById(R.id.button_initPresence);
         buttonControlLocation = findViewById(R.id.button_controlLocation);
 
+        // callbacks
         buttonControlLocation.setOnClickListener(new OnClickListener() {
+
+            private static final String TAG = "LocationClickListener";
 
             @Override
             public void onClick(final View v) {
                 Log.d(TAG, "onClick()");
-
-                final LocationService locationService = LocationService.getInstance();
 
                 if (locationService == null) {
                     initLocation();
@@ -174,26 +201,31 @@ public class MainActivity extends AppCompatActivity {
     private void startLocationService() {
         Log.d(TAG, "startLocationService()");
 
-        if (!isLocationServiceReady()) return;
-
         final Intent intent = new Intent(this, LocationService.class);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(intent);
-        } else {
-            startService(intent);
-        }
+        startService(intent);
+        bindService(intent, serviceConnection, 0);
     }
 
     private void registerLocationReceivers() {
+        Log.d(TAG, "registerLocationReceivers()");
+
         final LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this);
 
-        broadcastManager.registerReceiver(defaultReceiver, LocationAction.START.asIntentFilter());
-        broadcastManager.registerReceiver(defaultReceiver, LocationAction.STOP.asIntentFilter());
+        if (defaultReceiver == null) {
+            defaultReceiver = new DefaultReceiver();
+        }
+
+        broadcastManager.registerReceiver(defaultReceiver, LocationAction.RESUME.asIntentFilter());
+        broadcastManager.registerReceiver(defaultReceiver, LocationAction.PAUSE.asIntentFilter());
     }
 
-    private boolean isLocationServiceReady() {
-        return (hasPresenceDevice() && !LocationService.isRunning());
+    private void unregisterLocationReceivers() {
+        Log.d(TAG, "unregisterLocationReceivers()");
+
+        if (defaultReceiver != null) {
+            LocalBroadcastManager.getInstance(this).unregisterReceiver(defaultReceiver);
+        }
     }
 
     private boolean hasPresenceDevice() {
@@ -232,6 +264,8 @@ public class MainActivity extends AppCompatActivity {
 
                     buttonInitPresence.setEnabled(true);
                     buttonInitPresence.setOnClickListener(new OnClickListener() {
+
+                        private static final String TAG = "PresenceClickListener";
 
                         @Override
                         public void onClick(final View v) {
@@ -302,8 +336,8 @@ public class MainActivity extends AppCompatActivity {
 
                 private String getText() {
                     switch (locationAction) {
-                        case START: return getString(R.string.stop_location);
-                        case STOP: return getString(R.string.start_location);
+                        case RESUME: return getString(R.string.stop_location);
+                        case PAUSE: return getString(R.string.start_location);
                     }
 
                     throw new IllegalArgumentException("location action is not available.");

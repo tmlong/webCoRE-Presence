@@ -26,7 +26,7 @@ public class LocationListener implements android.location.LocationListener {
 
     @Override
     public void onLocationChanged(final Location location) {
-        Log.e(TAG, "onLocationChanged() location: " + location);
+        Log.d(TAG, "onLocationChanged() location: " + location);
 
         lastLocation.set(location);
 
