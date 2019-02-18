@@ -93,9 +93,14 @@ public class LocationService extends Service {
         Log.d(TAG, "onStartCommand()");
 
         if (intent == null) {
-            Log.w(TAG, "onStartCommand() intent not available; stopping service.");
+            Log.w(TAG, "onStartCommand() intent not available.");
 
-            return START_STICKY_COMPATIBILITY;
+            // Lollipop does not seem to cooperate when being removed from the foreground state.
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1) {
+                stopInForeground(false);
+            }
+
+            return START_NOT_STICKY;
         }
 
         if (!isListening()) {
@@ -222,7 +227,9 @@ public class LocationService extends Service {
     private void stopGeofencing() {
         Log.d(TAG, "stopGeofencing()");
 
-        geofencingClient.removeGeofences(geofencingPendingIntent);
+        if (geofencingClient != null) {
+            geofencingClient.removeGeofences(geofencingPendingIntent);
+        }
 
         if (geofencingReceiver != null) {
             LocalBroadcastManager.getInstance(this).unregisterReceiver(geofencingReceiver);
@@ -306,7 +313,7 @@ public class LocationService extends Service {
                 .setContentText(contextText)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setContentIntent(getContentIntent())
-                .setAutoCancel(true);
+                .setAutoCancel(false);
 
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
             builder.setContentTitle(appName);
