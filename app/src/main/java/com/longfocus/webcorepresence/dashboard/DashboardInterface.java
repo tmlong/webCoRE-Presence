@@ -3,6 +3,8 @@ package com.longfocus.webcorepresence.dashboard;
 import android.content.Context;
 import android.net.Uri;
 import android.provider.Settings.Secure;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
 
@@ -25,7 +27,7 @@ public class DashboardInterface {
     private final Context context;
     private final Registration.Callback callback;
 
-    public DashboardInterface(final Context context, final Registration.Callback callback) {
+    public DashboardInterface(@NonNull final Context context, @NonNull final Registration.Callback callback) {
         this.context = context;
         this.callback = callback;
     }
@@ -36,7 +38,7 @@ public class DashboardInterface {
     }
 
     @JavascriptInterface
-    public String getStatus(final String json) {
+    public String getStatus(@Nullable final String json) {
         Log.d(TAG, "getStatus() json: " + json);
 
         final StatusRequest statusRequest = ParseUtils.fromJson(json, StatusRequest.class);
@@ -54,7 +56,7 @@ public class DashboardInterface {
     }
 
     @JavascriptInterface
-    public String register(final String json) {
+    public String register(@Nullable final String json) {
         Log.d(TAG, "register() json: " + json);
 
         final Register register = ParseUtils.fromJson(json, Register.class);
@@ -75,7 +77,7 @@ public class DashboardInterface {
     }
 
     @JavascriptInterface
-    public String update(final String json) {
+    public String update(@Nullable final String json) {
         Log.d(TAG, "update() json: " + json);
 
         final Update update = ParseUtils.fromJson(json, Update.class);

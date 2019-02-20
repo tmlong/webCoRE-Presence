@@ -45,14 +45,14 @@ public class DashboardClient extends WebViewClient {
     private final Context context;
     private final Registration.Callback callback;
 
-    public DashboardClient(final Context context, final Registration.Callback callback) {
+    public DashboardClient(@NonNull final Context context, @NonNull final Registration.Callback callback) {
         this.context = context;
         this.callback = callback;
     }
 
     @Nullable
     @Override
-    public WebResourceResponse shouldInterceptRequest(final WebView view, final WebResourceRequest request) {
+    public WebResourceResponse shouldInterceptRequest(@NonNull final WebView view, @NonNull final WebResourceRequest request) {
         Log.d(TAG, "shouldInterceptRequest()");
 
         final Uri url = request.getUrl();
