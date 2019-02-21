@@ -274,7 +274,10 @@ public class MainActivity extends AppCompatActivity {
                             final String name = editTextPresenceName.getText().toString();
 
                             final RequestTaskFactory requestTaskFactory = RequestTaskFactory.getInstance(context);
-                            requestTaskFactory.dashboardPresenceCreate(new PresenceCreateCallback(context), name).execute();
+                            final RequestTask requestTask = requestTaskFactory.dashboardPresenceCreate(name);
+
+                            requestTask.setCallback(new PresenceCreateCallback(context));
+                            requestTask.execute();
                         }
                     });
                 }

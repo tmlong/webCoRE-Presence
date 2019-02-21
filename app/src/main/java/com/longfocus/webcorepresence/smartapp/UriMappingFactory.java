@@ -2,7 +2,9 @@ package com.longfocus.webcorepresence.smartapp;
 
 import android.net.Uri;
 
+import com.longfocus.webcorepresence.ParseUtils;
 import com.longfocus.webcorepresence.dashboard.Registration;
+import com.longfocus.webcorepresence.smartapp.request.Location;
 
 public class UriMappingFactory {
 
@@ -46,9 +48,10 @@ public class UriMappingFactory {
         return getLocation(LOCATION_EXITED_PATH, place);
     }
 
-    public Uri getLocationUpdated(final String location) {
+    public Uri getLocationUpdated(final Location location) {
+        final String locationJson = ParseUtils.toJson(location);
         return getBuilder(LOCATION_UPDATED_PATH)
-                .appendQueryParameter(LOCATION_PARAM, location)
+                .appendQueryParameter(LOCATION_PARAM, locationJson)
                 .build();
     }
 

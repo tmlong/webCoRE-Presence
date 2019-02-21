@@ -27,6 +27,8 @@ public class Registration implements Serializable {
 
     private static final String TAG = Registration.class.getSimpleName();
 
+    private static final String EMPTY_JSON = "{}";
+
     private static final String UUID_REGEX = "(.{8})(.{4})(.{4})(.{4})(.{12})";
     private static final String UUID_REPLACEMENT = "$1-$2-$3-$4-$5";
 
@@ -51,7 +53,7 @@ public class Registration implements Serializable {
         Log.d(TAG, "getInstance()");
 
         final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        final String registrationJson = sharedPreferences.getString(KEY, "{}");
+        final String registrationJson = sharedPreferences.getString(KEY, EMPTY_JSON);
 
         Log.d(TAG, "getInstance() registration json: " + registrationJson);
 
@@ -67,6 +69,8 @@ public class Registration implements Serializable {
         Log.d(TAG, "decode() data (decoded): " + data);
 
         final int hostLength = data.length() - 32 * 2;
+
+        Log.d(TAG, "decode() host length: " + hostLength);
 
         final String host = data.substring(0, hostLength);
         final String token = data.substring(hostLength, hostLength + 32);

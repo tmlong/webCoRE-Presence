@@ -24,14 +24,22 @@ public class RequestTask extends AsyncTask<String, Void, String> {
     private final OkHttpClient httpClient = new OkHttpClient();
 
     private final Uri uri;
-    private final JsonCallback callback;
+
+    private JsonCallback callback;
 
     public RequestTask(final Uri uri) {
-        this(uri, null);
+        this.uri = uri;
     }
 
-    public RequestTask(final Uri uri, final JsonCallback callback) {
-        this.uri = uri;
+    public Uri getUri() {
+        return uri;
+    }
+
+    public JsonCallback getCallback() {
+        return callback;
+    }
+
+    public void setCallback(final JsonCallback callback) {
         this.callback = callback;
     }
 
