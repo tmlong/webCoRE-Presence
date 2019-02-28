@@ -17,6 +17,8 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.webkit.WebView;
 import android.widget.Button;
@@ -54,6 +56,8 @@ public class MainActivity extends AppCompatActivity {
         public void onServiceConnected(final ComponentName name, final IBinder service) {
             final LocationService.ServiceBinder binder = (LocationService.ServiceBinder) service;
             locationService = binder.getService();
+
+            invalidateOptionsMenu();
         }
 
         @Override
@@ -113,6 +117,49 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
 
         unregisterLocationReceivers();
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(final Menu menu) {
+        menu.findItem(R.id.action_init_presence).setVisible(canInitPresenceDevice());
+
+        if (locationService != null) {
+            final boolean isListening = locationService.isListening();
+
+            menu.findItem(R.id.action_location_on).setVisible(isListening);
+            menu.findItem(R.id.action_location_off).setVisible(!isListening);
+            menu.findItem(R.id.action_refresh).setVisible(true);
+        }
+
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(final Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(final MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_init_presence:
+                break;
+            case R.id.action_location_on:
+                locationService.stopListening();
+                invalidateOptionsMenu();
+                break;
+            case R.id.action_location_off:
+                locationService.startListening();
+                invalidateOptionsMenu();
+                break;
+            case R.id.action_refresh:
+                break;
+            default:
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -226,6 +273,15 @@ public class MainActivity extends AppCompatActivity {
         if (defaultReceiver != null) {
             LocalBroadcastManager.getInstance(this).unregisterReceiver(defaultReceiver);
         }
+    }
+
+    private boolean canInitPresenceDevice() {
+        return (hasToken() && !hasPresenceDevice());
+    }
+
+    private boolean hasToken() {
+        final Registration registration = Registration.getInstance(this);
+        return (registration != null && !TextUtils.isEmpty(registration.getToken()));
     }
 
     private boolean hasPresenceDevice() {
