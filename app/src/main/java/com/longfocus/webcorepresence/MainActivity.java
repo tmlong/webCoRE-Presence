@@ -50,8 +50,12 @@ public class MainActivity extends AppCompatActivity {
 
     private final ServiceConnection serviceConnection = new ServiceConnection() {
 
+        private static final String TAG = "ServiceConnection";
+
         @Override
         public void onServiceConnected(final ComponentName name, final IBinder service) {
+            Log.d(TAG, "onServiceConnected() name: " + name);
+
             final LocationService.ServiceBinder binder = (LocationService.ServiceBinder) service;
             locationService = binder.getService();
 
@@ -60,6 +64,8 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onServiceDisconnected(final ComponentName name) {
+            Log.d(TAG, "onServiceDisconnected() name: " + name);
+
             locationService = null;
         }
     };
@@ -116,14 +122,16 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onPrepareOptionsMenu(final Menu menu) {
-        menu.findItem(R.id.action_init_presence).setVisible(canInitPresenceDevice());
+        Log.d(TAG, "onPrepareOptionsMenu()");
 
-        if (locationService != null) {
+        if (hasLocationService()) {
             final boolean isListening = locationService.isListening();
 
             menu.findItem(R.id.action_location_on).setVisible(isListening);
             menu.findItem(R.id.action_location_off).setVisible(!isListening);
             menu.findItem(R.id.action_refresh).setVisible(true);
+            menu.findItem(R.id.action_refresh).setEnabled(isListening);
+            menu.findItem(R.id.action_refresh).setIcon(isListening ? R.drawable.ic_refresh_black_24dp : R.drawable.ic_refresh_disabled_black_24dp);
         }
 
         return super.onPrepareOptionsMenu(menu);
@@ -131,6 +139,8 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(final Menu menu) {
+        Log.d(TAG, "onCreateOptionsMenu()");
+
         getMenuInflater().inflate(R.menu.menu_main, menu);
 
         final MenuItem searchItem = menu.findItem(R.id.action_init_presence);
@@ -142,16 +152,20 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(final MenuItem item) {
+        Log.d(TAG, "onOptionsItemSelected()");
+
         switch (item.getItemId()) {
             case R.id.action_init_presence:
                 break;
             case R.id.action_location_on:
-                locationService.stopListening();
-                invalidateOptionsMenu();
+                if (hasLocationService()) {
+                    locationService.stopListening();
+                }
                 break;
             case R.id.action_location_off:
-                locationService.startListening();
-                invalidateOptionsMenu();
+                if (hasLocationService()) {
+                    locationService.startListening();
+                }
                 break;
             case R.id.action_refresh:
                 locationService.refresh();
@@ -188,8 +202,8 @@ public class MainActivity extends AppCompatActivity {
         webViewDashboard.getSettings().setJavaScriptEnabled(true);
 
         // configure callbacks
-        webViewDashboard.addJavascriptInterface(new DashboardInterface(this, new DashboardCallback(this)), DASHBOARD_INTERFACE);
-        webViewDashboard.setWebViewClient(new DashboardClient(this, new DashboardCallback(this)));
+        webViewDashboard.addJavascriptInterface(new DashboardInterface(this, new DashboardCallback()), DASHBOARD_INTERFACE);
+        webViewDashboard.setWebViewClient(new DashboardClient(this, new DashboardCallback()));
 
         webViewDashboard.loadUrl(DASHBOARD_URL);
     }
@@ -252,17 +266,12 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private boolean canInitPresenceDevice() {
-        return (hasToken() && !hasPresenceDevice());
+    private boolean hasLocationService() {
+        return (locationService != null);
     }
 
     private boolean canStartLocationService() {
         return hasPresenceDevice();
-    }
-
-    private boolean hasToken() {
-        final Registration registration = Registration.getInstance(this);
-        return (registration != null && !TextUtils.isEmpty(registration.getToken()));
     }
 
     private boolean hasPresenceDevice() {
@@ -273,12 +282,6 @@ public class MainActivity extends AppCompatActivity {
     private class DashboardCallback implements Registration.Callback {
 
         private static final String TAG = "DashboardCallback";
-
-        private final Context context;
-
-        private DashboardCallback(final Context context) {
-            this.context = context;
-        }
 
         @Override
         public void handle(final Registration registration) {
@@ -346,6 +349,26 @@ public class MainActivity extends AppCompatActivity {
         public boolean onQueryTextSubmit(final String query) {
             Log.d(TAG, "onQueryTextSubmit query: " + query);
 
+            if (hasPresenceDevice()) {
+                warnExistingPresenceDevice(query);
+            } else {
+                createPresenceDevice(query);
+                menuItem.collapseActionView();
+            }
+
+            return false;
+        }
+
+        @Override
+        public boolean onQueryTextChange(final String newText) {
+            Log.d(TAG, "onQueryTextChange() newText: " + newText);
+
+            return false;
+        }
+
+        private void warnExistingPresenceDevice(final String name) {
+            Log.d(TAG, "warnExistingPresenceDevice() name: " + name);
+
             final AlertDialog.Builder alertBuilder = new AlertDialog.Builder(context);
             alertBuilder.setTitle(R.string.create_presence_title)
                     .setIcon(R.drawable.ic_warning_black_24dp)
@@ -353,8 +376,7 @@ public class MainActivity extends AppCompatActivity {
                     .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
 
                         public void onClick(final DialogInterface dialog, final int id) {
-                            createPresenceDevice(query);
-
+                            createPresenceDevice(name);
                             menuItem.collapseActionView();
                         }
                     })
@@ -365,15 +387,6 @@ public class MainActivity extends AppCompatActivity {
                     });
 
             alertBuilder.create().show();
-
-            return false;
-        }
-
-        @Override
-        public boolean onQueryTextChange(final String newText) {
-            Log.d(TAG, "onQueryTextChange() newText: " + newText);
-
-            return false;
         }
 
         private void createPresenceDevice(final String name) {

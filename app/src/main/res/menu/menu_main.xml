@@ -4,29 +4,28 @@
 
     <item android:id="@+id/action_init_presence"
         android:icon="@drawable/ic_add_location_black_24dp"
-        android:title="Presence Name..."
-        android:visible="false"
+        android:title="@string/presence_device_name"
         app:showAsAction="ifRoom|collapseActionView"
         app:actionViewClass="android.support.v7.widget.SearchView" />
 
     <item
         android:id="@+id/action_location_on"
         android:icon="@drawable/ic_location_on_black_24dp"
-        android:title="Stop Listening"
+        android:title="@string/stop_listening"
         android:visible="false"
         app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/action_location_off"
         android:icon="@drawable/ic_location_off_black_24dp"
-        android:title="Start Listening"
+        android:title="@string/start_listening"
         android:visible="false"
         app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/action_refresh"
         android:icon="@drawable/ic_refresh_black_24dp"
-        android:title="Refresh Location"
+        android:title="@string/refresh_location"
         android:visible="false"
         app:showAsAction="ifRoom" />
 
