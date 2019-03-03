@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
@@ -14,6 +15,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
 import android.text.TextUtils;
@@ -133,30 +135,7 @@ public class MainActivity extends AppCompatActivity {
 
         final MenuItem searchItem = menu.findItem(R.id.action_init_presence);
         final SearchView searchView = (SearchView) searchItem.getActionView();
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-
-            private static final String TAG = "OnQueryTextListener";
-
-            @Override
-            public boolean onQueryTextSubmit(final String query) {
-                Log.d(TAG, "onQueryTextSubmit query: " + query);
-
-                final RequestTaskFactory requestTaskFactory = RequestTaskFactory.getInstance(getApplicationContext());
-                final RequestTask requestTask = requestTaskFactory.dashboardPresenceCreate(query);
-
-                requestTask.setCallback(new PresenceCreateCallback(getApplicationContext()));
-                requestTask.execute();
-
-                searchItem.collapseActionView();
-
-                return false;
-            }
-
-            @Override
-            public boolean onQueryTextChange(final String newText) {
-                return false;
-            }
-        });
+        searchView.setOnQueryTextListener(new PresenceCreateListener(this, searchItem));
 
         return true;
     }
@@ -208,10 +187,9 @@ public class MainActivity extends AppCompatActivity {
 
         webViewDashboard.getSettings().setJavaScriptEnabled(true);
 
-        if (!hasPresenceDevice()) {
-            webViewDashboard.addJavascriptInterface(new DashboardInterface(this, new DashboardCallback(this)), DASHBOARD_INTERFACE);
-            webViewDashboard.setWebViewClient(new DashboardClient(this, new DashboardCallback(this)));
-        }
+        // configure callbacks
+        webViewDashboard.addJavascriptInterface(new DashboardInterface(this, new DashboardCallback(this)), DASHBOARD_INTERFACE);
+        webViewDashboard.setWebViewClient(new DashboardClient(this, new DashboardCallback(this)));
 
         webViewDashboard.loadUrl(DASHBOARD_URL);
     }
@@ -349,6 +327,63 @@ public class MainActivity extends AppCompatActivity {
                 final Error error = ParseUtils.fromJson(json, Error.class);
                 Log.e(TAG, "handle() unable to parse the response: " + error.getError(), e);
             }
+        }
+    }
+
+    private class PresenceCreateListener implements SearchView.OnQueryTextListener {
+
+        private static final String TAG = "PresenceCreateListener";
+
+        private final Context context;
+        private final MenuItem menuItem;
+
+        private PresenceCreateListener(final Context context, final MenuItem menuItem) {
+            this.context = context;
+            this.menuItem = menuItem;
+        }
+
+        @Override
+        public boolean onQueryTextSubmit(final String query) {
+            Log.d(TAG, "onQueryTextSubmit query: " + query);
+
+            final AlertDialog.Builder alertBuilder = new AlertDialog.Builder(context);
+            alertBuilder.setTitle(R.string.create_presence_title)
+                    .setIcon(R.drawable.ic_warning_black_24dp)
+                    .setMessage(R.string.create_presence_warning)
+                    .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+
+                        public void onClick(final DialogInterface dialog, final int id) {
+                            createPresenceDevice(query);
+
+                            menuItem.collapseActionView();
+                        }
+                    })
+                    .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+
+                        public void onClick(final DialogInterface dialog, final int id) {
+                        }
+                    });
+
+            alertBuilder.create().show();
+
+            return false;
+        }
+
+        @Override
+        public boolean onQueryTextChange(final String newText) {
+            Log.d(TAG, "onQueryTextChange() newText: " + newText);
+
+            return false;
+        }
+
+        private void createPresenceDevice(final String name) {
+            Log.d(TAG, "createPresenceDevice() name: " + name);
+
+            final RequestTaskFactory requestTaskFactory = RequestTaskFactory.getInstance(getApplicationContext());
+            final RequestTask requestTask = requestTaskFactory.dashboardPresenceCreate(name);
+
+            requestTask.setCallback(new PresenceCreateCallback(getApplicationContext()));
+            requestTask.execute();
         }
     }
 

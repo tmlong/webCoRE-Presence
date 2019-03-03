@@ -1,6 +1,9 @@
 <resources>
     <string name="app_name">webCoRE Presence</string>
 
-    <string name="start_location">Start Location</string>
-    <string name="stop_location">Stop Location</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+
+    <string name="create_presence_title">Create Presence Device</string>
+    <string name="create_presence_warning">A presence device already exists. Creating a new presence device will overwrite the existing one and it will no longer receive updates.</string>
 </resources>
