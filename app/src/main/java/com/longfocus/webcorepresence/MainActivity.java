@@ -20,10 +20,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.webkit.WebView;
-import android.widget.Button;
-import android.widget.EditText;
 
 import com.google.gson.JsonParseException;
 import com.longfocus.webcorepresence.dashboard.DashboardClient;
@@ -35,8 +32,6 @@ import com.longfocus.webcorepresence.smartapp.RequestTask;
 import com.longfocus.webcorepresence.smartapp.RequestTaskFactory;
 import com.longfocus.webcorepresence.smartapp.response.Error;
 import com.longfocus.webcorepresence.smartapp.response.Success;
-
-import static android.view.View.OnClickListener;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -69,9 +64,6 @@ public class MainActivity extends AppCompatActivity {
 
     // Views
     private WebView webViewDashboard;
-    private EditText editTextPresenceName;
-    private Button buttonInitPresence;
-    private Button buttonControlLocation;
 
     // Events
     private DefaultReceiver defaultReceiver;
@@ -209,30 +201,6 @@ public class MainActivity extends AppCompatActivity {
 
         // views
         webViewDashboard = findViewById(R.id.webView_dashboard);
-        editTextPresenceName = findViewById(R.id.edit_presenceName);
-        buttonInitPresence = findViewById(R.id.button_initPresence);
-        buttonControlLocation = findViewById(R.id.button_controlLocation);
-
-        // callbacks
-        buttonControlLocation.setOnClickListener(new OnClickListener() {
-
-            private static final String TAG = "LocationClickListener";
-
-            @Override
-            public void onClick(final View v) {
-                Log.d(TAG, "onClick()");
-
-                if (locationService == null) {
-                    initLocation();
-                } else {
-                    if (locationService.isListening()) {
-                        locationService.stopListening();
-                    } else {
-                        locationService.startListening();
-                    }
-                }
-            }
-        });
     }
 
     private void initDashboard() {
@@ -348,33 +316,6 @@ public class MainActivity extends AppCompatActivity {
             });
 
             invalidateOptionsMenu();
-
-            runOnUiThread(new Runnable() {
-
-                @Override
-                public void run() {
-                    editTextPresenceName.setEnabled(true);
-
-                    buttonInitPresence.setEnabled(true);
-                    buttonInitPresence.setOnClickListener(new OnClickListener() {
-
-                        private static final String TAG = "PresenceClickListener";
-
-                        @Override
-                        public void onClick(final View v) {
-                            Log.d(TAG, "onClick()");
-
-                            final String name = editTextPresenceName.getText().toString();
-
-                            final RequestTaskFactory requestTaskFactory = RequestTaskFactory.getInstance(context);
-                            final RequestTask requestTask = requestTaskFactory.dashboardPresenceCreate(name);
-
-                            requestTask.setCallback(new PresenceCreateCallback(context));
-                            requestTask.execute();
-                        }
-                    });
-                }
-            });
         }
     }
 
@@ -423,22 +364,7 @@ public class MainActivity extends AppCompatActivity {
 
             Log.d(TAG, "onReceive() action: " + locationAction);
 
-            runOnUiThread(new Runnable() {
-
-                @Override
-                public void run() {
-                    buttonControlLocation.setText(getText());
-                }
-
-                private String getText() {
-                    switch (locationAction) {
-                        case RESUME: return getString(R.string.stop_location);
-                        case PAUSE: return getString(R.string.start_location);
-                    }
-
-                    throw new IllegalArgumentException("location action is not available.");
-                }
-            });
+            invalidateOptionsMenu();
         }
     }
 }
