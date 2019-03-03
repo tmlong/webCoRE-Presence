@@ -15,6 +15,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.SearchView;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
@@ -138,6 +139,33 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(final Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
 
+        final MenuItem searchItem = menu.findItem(R.id.action_init_presence);
+        final SearchView searchView = (SearchView) searchItem.getActionView();
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+
+            private static final String TAG = "OnQueryTextListener";
+
+            @Override
+            public boolean onQueryTextSubmit(final String query) {
+                Log.d(TAG, "onQueryTextSubmit query: " + query);
+
+                final RequestTaskFactory requestTaskFactory = RequestTaskFactory.getInstance(getApplicationContext());
+                final RequestTask requestTask = requestTaskFactory.dashboardPresenceCreate(query);
+
+                requestTask.setCallback(new PresenceCreateCallback(getApplicationContext()));
+                requestTask.execute();
+
+                searchItem.collapseActionView();
+
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(final String newText) {
+                return false;
+            }
+        });
+
         return true;
     }
 
@@ -155,6 +183,7 @@ public class MainActivity extends AppCompatActivity {
                 invalidateOptionsMenu();
                 break;
             case R.id.action_refresh:
+                locationService.refresh();
                 break;
             default:
         }
@@ -248,6 +277,8 @@ public class MainActivity extends AppCompatActivity {
     private void startLocationService() {
         Log.d(TAG, "startLocationService()");
 
+        if (!canStartLocationService()) return;
+
         final Intent intent = new Intent(this, LocationService.class);
 
         startService(intent);
@@ -277,6 +308,10 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean canInitPresenceDevice() {
         return (hasToken() && !hasPresenceDevice());
+    }
+
+    private boolean canStartLocationService() {
+        return hasPresenceDevice();
     }
 
     private boolean hasToken() {
@@ -311,6 +346,8 @@ public class MainActivity extends AppCompatActivity {
                     webViewDashboard.setWebViewClient(null);
                 }
             });
+
+            invalidateOptionsMenu();
 
             runOnUiThread(new Runnable() {
 

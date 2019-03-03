@@ -69,8 +69,6 @@ public class LocationService extends Service {
     public void onCreate() {
         Log.d(TAG, "onCreate()");
 
-        super.onCreate();
-
         INSTANCE = this;
 
         initLocationManager();
@@ -80,8 +78,6 @@ public class LocationService extends Service {
     @Override
     public void onDestroy() {
         Log.d(TAG, "onDestroy()");
-
-        super.onDestroy();
 
         INSTANCE = null;
 
@@ -107,7 +103,7 @@ public class LocationService extends Service {
             startListening();
         }
 
-        return super.onStartCommand(intent, flags, startId);
+        return START_NOT_STICKY;
     }
 
     @Nullable
@@ -164,6 +160,12 @@ public class LocationService extends Service {
         stopInForeground(removeNotification);
 
         notifyListening(LocationAction.PAUSE);
+    }
+
+    public void refresh() throws SecurityException {
+        if (locationListener != null) {
+            locationManager.requestSingleUpdate(LocationManager.GPS_PROVIDER, locationListener, null);
+        }
     }
 
     private void notifyListening(@NonNull final LocationAction action) {
