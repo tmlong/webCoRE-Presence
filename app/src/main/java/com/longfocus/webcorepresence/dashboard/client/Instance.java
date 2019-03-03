@@ -17,6 +17,8 @@ public class Instance {
     private Object lifx;
     private Object virtualDevices;
     private Object globalVars;
+    private Object contacts;
+    private Object devices;
 
     public String getId() {
         return id;
@@ -120,5 +122,21 @@ public class Instance {
 
     public void setGlobalVars(final Object globalVars) {
         this.globalVars = globalVars;
+    }
+
+    public Object getContacts() {
+        return contacts;
+    }
+
+    public void setContacts(final Object contacts) {
+        this.contacts = contacts;
+    }
+
+    public Object getDevices() {
+        return devices;
+    }
+
+    public void setDevices(final Object devices) {
+        this.devices = devices;
     }
 }
