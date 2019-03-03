@@ -13,6 +13,8 @@ public class Instance {
 
     // ignored
     private Object account;
+    private Object contacts;
+    private Object devices;
     private Object pistons;
     private Object lifx;
     private Object virtualDevices;
@@ -88,6 +90,22 @@ public class Instance {
 
     public void setAccount(final Object account) {
         this.account = account;
+    }
+
+    public Object getContacts() {
+        return contacts;
+    }
+
+    public void setContacts(final Object contacts) {
+        this.contacts = contacts;
+    }
+
+    public Object getDevices() {
+        return devices;
+    }
+
+    public void setDevices(Object devices) {
+        this.devices = devices;
     }
 
     public Object getPistons() {
