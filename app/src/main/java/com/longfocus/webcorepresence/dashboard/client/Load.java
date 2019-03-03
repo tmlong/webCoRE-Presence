@@ -3,8 +3,8 @@ package com.longfocus.webcorepresence.dashboard.client;
 public class Load {
 
     private String name;
-    private long now;
     private Instance instance;
+    private long now;
 
     // ignored
     private Object location;
@@ -17,20 +17,20 @@ public class Load {
         this.name = name;
     }
 
-    public long getNow() {
-        return now;
-    }
-
-    public void setNow(final long now) {
-        this.now = now;
-    }
-
     public Instance getInstance() {
         return instance;
     }
 
     public void setInstance(final Instance instance) {
         this.instance = instance;
+    }
+
+    public long getNow() {
+        return now;
+    }
+
+    public void setNow(final long now) {
+        this.now = now;
     }
 
     public Object getLocation() {
