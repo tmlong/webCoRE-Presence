@@ -124,6 +124,8 @@ public class MainActivity extends AppCompatActivity {
     public boolean onPrepareOptionsMenu(final Menu menu) {
         Log.d(TAG, "onPrepareOptionsMenu()");
 
+        menu.findItem(R.id.action_init_presence).collapseActionView();
+
         if (hasLocationService()) {
             final boolean isListening = locationService.isListening();
 
