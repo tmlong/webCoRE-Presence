@@ -31,7 +31,7 @@ This app is an attempt to resurrect the webCoRE presence sensor to continue prov
 
 ### Android App
 
-1. Install the [webCoRE Presence](https://play.google.com/store/apps/details?id=com.longfoucs.com.webcorepresence) app from the Google Play Store.
+1. Install the [webCoRE Presence](https://play.google.com/store/apps/details?id=com.longfocus.webcorepresence) app from the Google Play Store.
 
 ## Configuration
 
