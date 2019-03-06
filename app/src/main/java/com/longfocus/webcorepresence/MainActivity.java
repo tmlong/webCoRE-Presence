@@ -125,6 +125,7 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "onPrepareOptionsMenu()");
 
         menu.findItem(R.id.action_init_presence).collapseActionView();
+        menu.findItem(R.id.action_init_presence).setVisible(canInitPresenceDevice());
 
         if (hasLocationService()) {
             final boolean isListening = locationService.isListening();
@@ -274,6 +275,15 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean canStartLocationService() {
         return hasPresenceDevice();
+    }
+
+    private boolean canInitPresenceDevice() {
+        return hasToken();
+    }
+
+    private boolean hasToken() {
+        final Registration registration = Registration.getInstance(this);
+        return (registration != null && !TextUtils.isEmpty(registration.getToken()));
     }
 
     private boolean hasPresenceDevice() {

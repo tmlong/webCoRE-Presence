@@ -5,6 +5,7 @@
     <item android:id="@+id/action_init_presence"
         android:icon="@drawable/ic_add_location_black_24dp"
         android:title="@string/presence_device_name"
+        android:visible="false"
         app:showAsAction="ifRoom|collapseActionView"
         app:actionViewClass="android.support.v7.widget.SearchView" />
 
