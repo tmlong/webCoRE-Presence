@@ -4,7 +4,7 @@ https://github.com/tmlong/webCoRE
 
 ## Overview
 
-This app is an attempt to resurrect the webCoRE presence sensor to continue providing more consistent geofencing updates. This works with the webCoRE SmartApp for creating powerful location-based automation.
+This app is an attempt to breathe new life into the webCoRE presence sensor to continue providing more consistent geofencing updates. This works with the webCoRE SmartApp for creating powerful location-based automation.
 
 <img src="https://i.imgur.com/GtXMZBt.png" width="180" height="320">
 
@@ -35,12 +35,15 @@ This app is an attempt to resurrect the webCoRE presence sensor to continue prov
 
 ## Configuration
 
-### Add Presence Sensor
+### Presence Sensor
 
 > Adding a presence sensor will appear as a new device in your SmartThings app.
 
 1. Open the webCoRE Presence app and login to your dashboard.
-1. Click the ![Add Presence Sensor](https://i.imgur.com/IhUEp9G.png "Add Presence Sensor") icon to add a presence sensor.
+1. Click the [![Add Presence Sensor](https://i.imgur.com/IhUEp9G.png "Add Presence Sensor")](#) icon to add a presence sensor.
+   * As an alternative, the presence sensor can be setup under the *'Settings'* > *'Places'* > *'Setup sensor'* option from within the dashboard. Either option will work just fine and have the same end result.
+   * Note: Once the presence sensor is configured, the *'Setup sensor'* option from within the dashboard will no longer be available until the app is reinstalled.
+1. Location updates will be started immediately.
 
 ## Links
 
