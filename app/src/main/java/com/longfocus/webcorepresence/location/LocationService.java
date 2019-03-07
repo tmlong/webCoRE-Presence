@@ -41,6 +41,8 @@ public class LocationService extends Service {
 
     private final IBinder serviceBinder = new ServiceBinder();
 
+    private boolean listening;
+
     // Location
     private LocationManager locationManager;
     private LocationListener locationListener;
@@ -72,7 +74,9 @@ public class LocationService extends Service {
         INSTANCE = this;
 
         initLocationManager();
+        initLocationListener();
         initGeofencingReceiver();
+        initGeofencingClient();
     }
 
     @Override
@@ -117,22 +121,22 @@ public class LocationService extends Service {
     public boolean isListening() {
         Log.d(TAG, "isListening()");
 
-        return (locationListener != null);
+        return listening;
     }
 
     public void startListening() {
         Log.d(TAG, "startListening()");
 
-        initLocationListener();
-
         try {
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, LOCATION_INTERVAL, LOCATION_DISTANCE, locationListener);
+            startLocationUpdates();
 
             startGeofencing();
 
             startInForeground();
 
             notifyListening(LocationAction.RESUME);
+
+            listening = true;
         } catch (SecurityException e) {
             Log.e(TAG, "startListening() app permission is not valid.", e);
         } catch (IllegalArgumentException e) {
@@ -149,23 +153,21 @@ public class LocationService extends Service {
     public void stopListening(final boolean removeNotification) {
         Log.d(TAG, "stopListening() remove notification: " + removeNotification);
 
-        if (locationListener != null) {
-            locationManager.removeUpdates(locationListener);
-
-            locationListener = null;
-        }
+        stopLocationUpdates();
 
         stopGeofencing();
 
         stopInForeground(removeNotification);
 
         notifyListening(LocationAction.PAUSE);
+
+        listening = false;
     }
 
     public void refresh() throws SecurityException {
-        if (locationListener != null) {
-            locationManager.requestSingleUpdate(LocationManager.GPS_PROVIDER, locationListener, null);
-        }
+        Log.d(TAG, "refresh()");
+
+        startLocationUpdates();
     }
 
     private void notifyListening(@NonNull final LocationAction action) {
@@ -208,34 +210,51 @@ public class LocationService extends Service {
         Log.d(TAG, "initGeofencingReceiver()");
 
         if (geofencingReceiver == null) {
+            Log.d(TAG, "initGeofencingReceiver() creating receiver...");
+
             geofencingReceiver = new GeofencingReceiver();
         }
+    }
+
+    private void initGeofencingClient() {
+        Log.d(TAG, "initGeofencingClient()");
+
+        if (geofencingClient == null) {
+            Log.d(TAG, "initGeofencingClient() creating client...");
+
+            geofencingClient = LocationServices.getGeofencingClient(this);
+        }
+    }
+
+    private void startLocationUpdates() throws SecurityException {
+        Log.d(TAG, "startLocationUpdates()");
+
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, LOCATION_INTERVAL, LOCATION_DISTANCE, locationListener);
+    }
+
+    private void stopLocationUpdates() {
+        Log.d(TAG, "stopLocationUpdates()");
+
+        locationManager.removeUpdates(locationListener);
     }
 
     private void startGeofencing() throws SecurityException {
         Log.d(TAG, "startGeofencing()");
 
-        geofencingClient = LocationServices.getGeofencingClient(this);
         geofencingClient.addGeofences(getGeofencingRequest(), getGeofencePendingIntent());
 
-        if (geofencingReceiver != null) {
-            final LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this);
+        final LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(this);
 
-            broadcastManager.registerReceiver(geofencingReceiver, GeofencingAction.ENTER.asIntentFilter());
-            broadcastManager.registerReceiver(geofencingReceiver, GeofencingAction.EXIT.asIntentFilter());
-        }
+        broadcastManager.registerReceiver(geofencingReceiver, GeofencingAction.ENTER.asIntentFilter());
+        broadcastManager.registerReceiver(geofencingReceiver, GeofencingAction.EXIT.asIntentFilter());
     }
 
     private void stopGeofencing() {
         Log.d(TAG, "stopGeofencing()");
 
-        if (geofencingClient != null) {
-            geofencingClient.removeGeofences(geofencingPendingIntent);
-        }
+        geofencingClient.removeGeofences(geofencingPendingIntent);
 
-        if (geofencingReceiver != null) {
-            LocalBroadcastManager.getInstance(this).unregisterReceiver(geofencingReceiver);
-        }
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(geofencingReceiver);
     }
 
     @NonNull
