@@ -94,7 +94,14 @@ public class DashboardClient extends WebViewClient {
 
             Log.d(TAG, "handleRegisterRequest() data: " + data);
 
-            final Registration registration = Registration.decode(data);
+            // decode registration
+            final Registration registrationDecoded = Registration.decode(data);
+
+            // save registration
+            final Registration registration = Registration.getInstance(context);
+            registration.setHost(registrationDecoded.getHost());
+            registration.setApiToken(registrationDecoded.getApiToken());
+            registration.setAppId(registrationDecoded.getAppId());
             registration.save(context);
 
             return new WebResourceResponse(
@@ -143,8 +150,15 @@ public class DashboardClient extends WebViewClient {
 
             Log.d(TAG, "handleLoadRequest() load:" + load);
 
+            // decode registration
+            final Registration registrationDecoded = Registration.decode(data);
+
+            // save registration
             final Registration registration = Registration.decode(load);
-            registration.setToken(token);
+            registration.setHost(registrationDecoded.getHost());
+            registration.setApiToken(registrationDecoded.getApiToken());
+            registration.setAppId(registrationDecoded.getAppId());
+            registration.setToken(registrationDecoded.getToken());
             registration.save(context);
 
             this.callback.handle(registration);

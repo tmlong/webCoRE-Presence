@@ -303,7 +303,6 @@ public class MainActivity extends AppCompatActivity {
 
                 @Override
                 public void run() {
-                    webViewDashboard.removeJavascriptInterface(DASHBOARD_INTERFACE);
                     webViewDashboard.setWebViewClient(null);
                 }
             });
