@@ -31,6 +31,8 @@ This app is an attempt to breathe new life into the webCoRE presence sensor to c
 
 ### Android App
 
+> Requires access to the device's location.
+
 1. Install the [webCoRE Presence](https://play.google.com/store/apps/details?id=com.longfocus.webcorepresence) app from the Google Play Store.
 
 ## Configuration
@@ -40,10 +42,28 @@ This app is an attempt to breathe new life into the webCoRE presence sensor to c
 > Adding a presence sensor will appear as a new device in your SmartThings app.
 
 1. Open the webCoRE Presence app and login to your dashboard.
-1. Click the [![Add Presence Sensor](https://i.imgur.com/IhUEp9G.png "Add Presence Sensor")](#) icon to add a presence sensor.
+1. Click the [![Add Presence Sensor](https://i.imgur.com/IhUEp9G.png "Add Presence Sensor")](#presence-sensor) icon to add a presence sensor.
    * As an alternative, the presence sensor can be setup under the *'Settings'* > *'Places'* > *'Setup sensor'* option from within the dashboard. Either option will work just fine and have the same end result.
    * Note: Once the presence sensor is configured, the *'Setup sensor'* option from within the dashboard will no longer be available until the app is reinstalled.
 1. Location updates will be started immediately.
+
+## Options
+
+### App
+
+[![Add Presence Sensor](https://i.imgur.com/IhUEp9G.png "Add Presence Sensor")](#app) Add a presence sensor. This option will overwrite the existing presence sensor, if one already exists.
+
+[![Location Updates Started](https://i.imgur.com/bSJt5vN.png "Location Updates Started")](#app) Location updates started. Clicking this icon will stop location updates. This option will appear once a presence sensor is configured.
+
+[![Location Updates Stopped](https://i.imgur.com/1lkoGf2.png "Location Updates Stopped")](#app) Location updates stopped. Clicking this icon will start location updates. This option will appear once a presence sensor is configured.
+
+[![Refresh Location](https://i.imgur.com/7vhVaw6.png "Refresh Location")](#app) Refresh location. Clicking this icon will immediately update the location. This option will appear once a presence sensor is configured.
+
+### Notification
+
+[![Location Updates Started](https://i.imgur.com/CJVO5eU.png "Location Updates Started")](#notification) Location updates started.
+
+[![Location Updates Stopped](https://i.imgur.com/fN6nkRq.png "Location Updates Stopped")](#notification) Location updates stopped.
 
 ## Links
 
