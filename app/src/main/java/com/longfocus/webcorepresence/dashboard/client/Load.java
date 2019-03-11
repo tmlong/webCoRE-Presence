@@ -6,9 +6,6 @@ public class Load {
     private Instance instance;
     private long now;
 
-    // ignored
-    private Object location;
-
     public String getName() {
         return name;
     }
@@ -31,13 +28,5 @@ public class Load {
 
     public void setNow(final long now) {
         this.now = now;
-    }
-
-    public Object getLocation() {
-        return location;
-    }
-
-    public void setLocation(final Object location) {
-        this.location = location;
     }
 }

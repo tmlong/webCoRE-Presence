@@ -31,7 +31,6 @@ public class ParseUtils {
 
     static {
         GSON = new GsonBuilder()
-                .registerTypeAdapterFactory(new ValidatorAdapterFactory())
                 .registerTypeAdapter(StatusCode.class, new StatusCodeDeserializer())
                 .create();
     }
@@ -52,7 +51,7 @@ public class ParseUtils {
 
     @NonNull
     public static String jsonCallback(@NonNull final String callback, @NonNull final String response) {
-        if (response.length() < callback.length()) {
+        if (callback.length() == 0 || response.length() < callback.length()) {
             return response;
         }
 

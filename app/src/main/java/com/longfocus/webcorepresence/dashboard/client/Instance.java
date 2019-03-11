@@ -10,15 +10,7 @@ public class Instance {
     private String coreVersion;
     private boolean enabled;
     private Settings settings;
-
-    // ignored
-    private Object account;
-    private Object pistons;
-    private Object lifx;
-    private Object virtualDevices;
-    private Object globalVars;
-    private Object contacts;
-    private Object devices;
+    private String token;
 
     public String getId() {
         return id;
@@ -84,59 +76,11 @@ public class Instance {
         this.settings = settings;
     }
 
-    public Object getAccount() {
-        return account;
+    public String getToken() {
+        return token;
     }
 
-    public void setAccount(final Object account) {
-        this.account = account;
-    }
-
-    public Object getPistons() {
-        return pistons;
-    }
-
-    public void setPistons(final Object pistons) {
-        this.pistons = pistons;
-    }
-
-    public Object getLifx() {
-        return lifx;
-    }
-
-    public void setLifx(final Object lifx) {
-        this.lifx = lifx;
-    }
-
-    public Object getVirtualDevices() {
-        return virtualDevices;
-    }
-
-    public void setVirtualDevices(final Object virtualDevices) {
-        this.virtualDevices = virtualDevices;
-    }
-
-    public Object getGlobalVars() {
-        return globalVars;
-    }
-
-    public void setGlobalVars(final Object globalVars) {
-        this.globalVars = globalVars;
-    }
-
-    public Object getContacts() {
-        return contacts;
-    }
-
-    public void setContacts(final Object contacts) {
-        this.contacts = contacts;
-    }
-
-    public Object getDevices() {
-        return devices;
-    }
-
-    public void setDevices(final Object devices) {
-        this.devices = devices;
+    public void setToken(final String token) {
+        this.token = token;
     }
 }
