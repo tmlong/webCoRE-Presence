@@ -34,8 +34,8 @@ public class Place implements Serializable {
     private String id; // place id
     private String n; // name
     private boolean h; // home flag
-    private float i; // inner radius (meters)
-    private float o; // outer radius (meters)
+    private double i; // inner radius (meters)
+    private double o; // outer radius (meters)
     private double[] p; // position (latitude, longitude)
     private Meta meta;
     private String $$hashKey;
@@ -64,19 +64,19 @@ public class Place implements Serializable {
         this.h = h;
     }
 
-    public float getI() {
+    public double getI() {
         return i;
     }
 
-    public void setI(final float i) {
+    public void setI(final double i) {
         this.i = i;
     }
 
-    public float getO() {
+    public double getO() {
         return o;
     }
 
-    public void setO(final float o) {
+    public void setO(final double o) {
         this.o = o;
     }
 
@@ -113,8 +113,8 @@ public class Place implements Serializable {
             final double latitude = position[0];
             final double longitude = position[1];
 
-            geofences.add(new Geofence.Builder().setRequestId(getRequestId(instanceId, Location.INNER)).setCircularRegion(latitude, longitude, getI()).setExpirationDuration(GEOFENCE_EXPIRATION).setTransitionTypes(GEOFENCE_TRANSITIONS).build());
-            geofences.add(new Geofence.Builder().setRequestId(getRequestId(instanceId, Location.OUTER)).setCircularRegion(latitude, longitude, getO()).setExpirationDuration(GEOFENCE_EXPIRATION).setTransitionTypes(GEOFENCE_TRANSITIONS).build());
+            geofences.add(new Geofence.Builder().setRequestId(getRequestId(instanceId, Location.INNER)).setCircularRegion(latitude, longitude, (float) getI()).setExpirationDuration(GEOFENCE_EXPIRATION).setTransitionTypes(GEOFENCE_TRANSITIONS).build());
+            geofences.add(new Geofence.Builder().setRequestId(getRequestId(instanceId, Location.OUTER)).setCircularRegion(latitude, longitude, (float) getO()).setExpirationDuration(GEOFENCE_EXPIRATION).setTransitionTypes(GEOFENCE_TRANSITIONS).build());
         }
 
         return geofences;
