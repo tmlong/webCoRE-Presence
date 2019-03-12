@@ -38,7 +38,6 @@ public class Place implements Serializable {
     private double o; // outer radius (meters)
     private double[] p; // position (latitude, longitude)
     private Meta meta;
-    private String $$hashKey;
 
     public String getId() {
         return id;
@@ -94,14 +93,6 @@ public class Place implements Serializable {
 
     public void setMeta(final Meta meta) {
         this.meta = meta;
-    }
-
-    public String get$$hashKey() {
-        return $$hashKey;
-    }
-
-    public void set$$hashKey(final String $$hashKey) {
-        this.$$hashKey = $$hashKey;
     }
 
     @NonNull

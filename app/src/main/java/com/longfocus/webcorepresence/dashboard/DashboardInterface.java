@@ -92,7 +92,6 @@ public class DashboardInterface {
             Log.d(TAG, "update() p o: " + place.getO());
             Log.d(TAG, "update() p p: " + place.getP());
             Log.d(TAG, "update() p meta: " + place.getMeta());
-            Log.d(TAG, "update() p hash: " + place.get$$hashKey());
         }
 
         final Registration registration = Registration.getInstance(context);

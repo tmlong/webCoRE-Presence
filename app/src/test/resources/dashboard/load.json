@@ -1,0 +1,48 @@
+{
+  "name": "Home \\ webCoRE",
+  "instance": {
+    "id": ":c31287b90c5f4012b23bd2fc1d16d96c:",
+    "locationId": ":dd770930cab74bda90c856add89c74c4:",
+    "name": "webCoRE",
+    "uri": "https://graph-na04-useast2.api.smartthings.com:443/api/token/cf851b5c-7be3-4fd6-b566-b80e02b9cd6e/smartapps/installations/1df6386d-a720-43a8-a5e0-ce42fae3d912/",
+    "deviceVersion": "1551652687521",
+    "coreVersion": "v0.3.10a.20190223",
+    "enabled": true,
+    "settings": {
+      "places": [
+        {
+          "h": true,
+          "i": 122.51291010685114,
+          "id": ":dcb3ae5326484c3495af3b5a758a14f5:",
+          "meta": {
+            "d": 5.4886627,
+            "p": true
+          },
+          "n": "Rushmore",
+          "o": 412.01632938099965,
+          "p": [
+            43.87910575938632,
+            -103.45906856562243
+          ]
+        },
+        {
+          "h": false,
+          "i": 54.672307981457244,
+          "id": ":80c38a04cb1242d3b65374dbedd587b3:",
+          "meta": {
+            "d": 2889.4446,
+            "p": false
+          },
+          "n": "Las Vegas",
+          "o": 411.19042501108135,
+          "p": [
+            36.169941182266306,
+            -115.13983282128906
+          ]
+        }
+      ]
+    },
+    "token": "8cd1473a-6627-4422-9f00-e7d7453bf540"
+  },
+  "now": 1551749743378
+}
