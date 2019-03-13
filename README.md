@@ -49,17 +49,24 @@ This app is an attempt to breathe new life into the webCoRE presence sensor to c
 
 ## Options
 
-> Location updates are polled every 10 seconds and 50 meters.
+> Location updates are polled with a minimum interval of 10s and distance of 50m.
 
 ### App
 
 <img src="https://i.imgur.com/snrMbMx.png" width="360" height="49">
 <img src="https://i.imgur.com/y4UC1xa.png" width="360" height="49">
 
-* [![Add Presence Sensor](https://i.imgur.com/IhUEp9G.png "Add Presence Sensor")](#app) Add a presence sensor. This option will overwrite the existing presence sensor, if one already exists.
-* [![Location Updates Started](https://i.imgur.com/bSJt5vN.png "Location Updates Started")](#app) Location updates started. Clicking this icon will stop location updates. This option will appear once a presence sensor is configured.
-* [![Location Updates Stopped](https://i.imgur.com/1lkoGf2.png "Location Updates Stopped")](#app) Location updates stopped. Clicking this icon will start location updates. This option will appear once a presence sensor is configured.
-* [![Refresh Location](https://i.imgur.com/7vhVaw6.png "Refresh Location")](#app) Refresh location. Clicking this icon will immediately update the location. This option will appear once a presence sensor is configured.
+* [![Add Presence Sensor](https://i.imgur.com/IhUEp9G.png "Add Presence Sensor")](#app) Add a presence sensor.
+  * This option will overwrite the existing presence sensor, if one already exists.
+* [![Location Updates Started](https://i.imgur.com/bSJt5vN.png "Location Updates Started")](#app) Location updates started.
+  * Clicking this icon will stop location updates.
+  * This option will appear once a presence sensor is configured.
+* [![Location Updates Stopped](https://i.imgur.com/1lkoGf2.png "Location Updates Stopped")](#app) Location updates stopped.
+  * Clicking this icon will start location updates.
+  * This option will appear once a presence sensor is configured.
+* [![Refresh Location](https://i.imgur.com/7vhVaw6.png "Refresh Location")](#app) Refresh location.
+  * Clicking this icon will immediately update the location.
+  * This option will appear once a presence sensor is configured.
 
 ### Notification
 
