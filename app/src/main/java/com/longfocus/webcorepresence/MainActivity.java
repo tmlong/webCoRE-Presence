@@ -4,7 +4,6 @@ import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
@@ -17,12 +16,15 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.SearchView;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.webkit.WebView;
+import android.widget.EditText;
 
 import com.google.gson.JsonParseException;
 import com.longfocus.webcorepresence.dashboard.DashboardClient;
@@ -124,8 +126,8 @@ public class MainActivity extends AppCompatActivity {
     public boolean onPrepareOptionsMenu(final Menu menu) {
         Log.d(TAG, "onPrepareOptionsMenu()");
 
-        menu.findItem(R.id.action_init_presence).collapseActionView();
-        menu.findItem(R.id.action_init_presence).setVisible(canInitPresenceDevice());
+        menu.findItem(R.id.action_add_presence).collapseActionView();
+        menu.findItem(R.id.action_add_presence).setVisible(canInitPresenceDevice());
 
         if (hasLocationService()) {
             final boolean isListening = locationService.isListening();
@@ -146,11 +148,46 @@ public class MainActivity extends AppCompatActivity {
 
         getMenuInflater().inflate(R.menu.menu_main, menu);
 
-        final MenuItem searchItem = menu.findItem(R.id.action_init_presence);
-        final SearchView searchView = (SearchView) searchItem.getActionView();
-        searchView.setOnQueryTextListener(new PresenceCreateListener(this, searchItem));
+        configureAddPresenceMenuItem(menu);
 
         return true;
+    }
+
+    private void configureAddPresenceMenuItem(final Menu menu) {
+        final MenuItem menuItem = menu.findItem(R.id.action_add_presence);
+        final View actionView = menuItem.getActionView();
+        final EditText editText = actionView.findViewById(R.id.editText_menu);
+
+        editText.setHint(R.string.app_name);
+
+        menuItem.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
+
+            @Override
+            public boolean onMenuItemActionExpand(final MenuItem item) {
+                editText.requestFocus();
+
+                getInputService().showSoftInput(getCurrentFocus(), InputMethodManager.SHOW_IMPLICIT);
+
+                return true;
+            }
+
+            @Override
+            public boolean onMenuItemActionCollapse(final MenuItem item) {
+                getInputService().hideSoftInputFromWindow(editText.getWindowToken(), 0);
+
+                return true;
+            }
+        });
+
+        editText.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
+                getInputService().hideSoftInputFromWindow(v.getWindowToken(), 0);
+
+                new PresenceCreateListener(this, menuItem).onSubmit(v.getText().toString());
+            }
+
+            return true;
+        });
     }
 
     @Override
@@ -158,7 +195,7 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "onOptionsItemSelected()");
 
         switch (item.getItemId()) {
-            case R.id.action_init_presence:
+            case R.id.action_add_presence:
                 break;
             case R.id.action_location_on:
                 if (hasLocationService()) {
@@ -269,6 +306,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private InputMethodManager getInputService() {
+        return (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+    }
+
     private boolean hasLocationService() {
         return (locationService != null);
     }
@@ -344,7 +385,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private class PresenceCreateListener implements SearchView.OnQueryTextListener {
+    private class PresenceCreateListener {
 
         private static final String TAG = "PresenceCreateListener";
 
@@ -356,23 +397,15 @@ public class MainActivity extends AppCompatActivity {
             this.menuItem = menuItem;
         }
 
-        @Override
-        public boolean onQueryTextSubmit(final String query) {
-            Log.d(TAG, "onQueryTextSubmit query: " + query);
+        public boolean onSubmit(final String name) {
+            Log.d(TAG, "onSubmit name: " + name);
 
             if (hasPresenceDevice()) {
-                warnExistingPresenceDevice(query);
+                warnExistingPresenceDevice(name);
             } else {
-                createPresenceDevice(query);
+                createPresenceDevice(name);
                 menuItem.collapseActionView();
             }
-
-            return false;
-        }
-
-        @Override
-        public boolean onQueryTextChange(final String newText) {
-            Log.d(TAG, "onQueryTextChange() newText: " + newText);
 
             return false;
         }
@@ -384,17 +417,11 @@ public class MainActivity extends AppCompatActivity {
             alertBuilder.setTitle(R.string.create_presence_title)
                     .setIcon(R.drawable.ic_warning_black_24dp)
                     .setMessage(R.string.create_presence_warning)
-                    .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-
-                        public void onClick(final DialogInterface dialog, final int id) {
-                            createPresenceDevice(name);
-                            menuItem.collapseActionView();
-                        }
+                    .setPositiveButton(R.string.ok, (dialog, id) -> {
+                        createPresenceDevice(name);
+                        menuItem.collapseActionView();
                     })
-                    .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-
-                        public void onClick(final DialogInterface dialog, final int id) {
-                        }
+                    .setNegativeButton(R.string.cancel, (dialog, id) -> {
                     });
 
             alertBuilder.create().show();
