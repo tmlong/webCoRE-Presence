@@ -340,13 +340,7 @@ public class MainActivity extends AppCompatActivity {
         public void handle(final Registration registration) {
             Log.d(TAG, "handle() registration: " + registration);
 
-            webViewDashboard.post(new Runnable() {
-
-                @Override
-                public void run() {
-                    webViewDashboard.setWebViewClient(null);
-                }
-            });
+            webViewDashboard.post(() -> webViewDashboard.setWebViewClient(null));
 
             invalidateOptionsMenu();
         }

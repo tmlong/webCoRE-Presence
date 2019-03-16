@@ -151,14 +151,14 @@ public class DashboardClient extends WebViewClient {
             Log.d(TAG, "handleLoadRequest() load:" + load);
 
             // decode registration
-            final Registration registrationDecoded = Registration.decode(data);
+            final Registration registrationDecoded = Registration.decode(load);
 
             // save registration
-            final Registration registration = Registration.decode(load);
+            final Registration registration = Registration.getInstance(context);
             registration.setHost(registrationDecoded.getHost());
             registration.setApiToken(registrationDecoded.getApiToken());
             registration.setAppId(registrationDecoded.getAppId());
-            registration.setToken(registrationDecoded.getToken());
+            registration.setToken(token);
             registration.save(context);
 
             this.callback.handle(registration);
