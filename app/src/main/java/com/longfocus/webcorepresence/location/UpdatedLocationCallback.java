@@ -25,5 +25,7 @@ public class UpdatedLocationCallback implements LocationCallback {
         final Location location = Location.fromLocation(geoLocation);
 
         requestTaskFactory.locationUpdated(location).execute();
+
+        LocationService.getInstance().updateLocation(location);
     }
 }

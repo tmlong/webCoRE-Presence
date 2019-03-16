@@ -3,6 +3,7 @@ package com.longfocus.webcorepresence.dashboard.js;
 import android.support.annotation.NonNull;
 
 import com.google.android.gms.location.Geofence;
+import com.longfocus.webcorepresence.smartapp.request.Location;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -15,14 +16,14 @@ public class Place implements Serializable {
     private static final int GEOFENCE_EXPIRATION = -1;
     private static final int GEOFENCE_TRANSITIONS = Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_EXIT;
 
-    enum Location {
+    enum LocationType {
 
         INNER("i"),
         OUTER("o");
 
         private final String type;
 
-        Location(final String type) {
+        LocationType(final String type) {
             this.type = type;
         }
 
@@ -100,15 +101,39 @@ public class Place implements Serializable {
         final List<Geofence> geofences = new ArrayList<>();
 
         if (hasPosition()) {
-            final double[] position = getP();
-            final double latitude = position[0];
-            final double longitude = position[1];
+            final Location location = getLocation();
 
-            geofences.add(new Geofence.Builder().setRequestId(getRequestId(instanceId, Location.INNER)).setCircularRegion(latitude, longitude, (float) getI()).setExpirationDuration(GEOFENCE_EXPIRATION).setTransitionTypes(GEOFENCE_TRANSITIONS).build());
-            geofences.add(new Geofence.Builder().setRequestId(getRequestId(instanceId, Location.OUTER)).setCircularRegion(latitude, longitude, (float) getO()).setExpirationDuration(GEOFENCE_EXPIRATION).setTransitionTypes(GEOFENCE_TRANSITIONS).build());
+            // inner
+            geofences.add(new Geofence.Builder()
+                    .setRequestId(getRequestId(instanceId, LocationType.INNER))
+                    .setCircularRegion(location.getLatitude(), location.getLongitude(), (float) getI())
+                    .setExpirationDuration(GEOFENCE_EXPIRATION)
+                    .setTransitionTypes(GEOFENCE_TRANSITIONS)
+                    .build());
+
+            // outer
+            geofences.add(new Geofence.Builder()
+                    .setRequestId(getRequestId(instanceId, LocationType.OUTER))
+                    .setCircularRegion(location.getLatitude(), location.getLongitude(), (float) getO())
+                    .setExpirationDuration(GEOFENCE_EXPIRATION)
+                    .setTransitionTypes(GEOFENCE_TRANSITIONS)
+                    .build());
         }
 
         return geofences;
+    }
+
+    @NonNull
+    public Location getLocation() {
+        final double[] position = getP();
+        final double latitude = position[0];
+        final double longitude = position[1];
+
+        final Location location = new Location();
+        location.setLatitude(latitude);
+        location.setLongitude(longitude);
+
+        return location;
     }
 
     private boolean hasPosition() {
@@ -116,7 +141,7 @@ public class Place implements Serializable {
         return (position != null && position.length >= 2);
     }
 
-    private String getRequestId(final String instanceId, final Location location) {
-        return String.format(REQUEST_ID_FORMAT, instanceId, getId(), location.getType());
+    private String getRequestId(final String instanceId, final LocationType locationType) {
+        return String.format(REQUEST_ID_FORMAT, instanceId, getId(), locationType.getType());
     }
 }

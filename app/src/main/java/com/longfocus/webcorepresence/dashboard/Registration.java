@@ -16,6 +16,7 @@ import com.longfocus.webcorepresence.dashboard.client.Load;
 import com.longfocus.webcorepresence.dashboard.client.Settings;
 import com.longfocus.webcorepresence.dashboard.js.Place;
 import com.longfocus.webcorepresence.smartapp.UriMappingFactory;
+import com.longfocus.webcorepresence.smartapp.request.Location;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -217,6 +218,8 @@ public class Registration implements Serializable {
 
     @NonNull
     public Uri getUri() {
+        Log.d(TAG, "getUri()");
+
         return new Uri.Builder()
                 .scheme(URI_SCHEME)
                 .authority(host)
@@ -226,6 +229,8 @@ public class Registration implements Serializable {
 
     @NonNull
     public List<Geofence> getGeofences() {
+        Log.d(TAG, "getGeofences()");
+
         final List<Geofence> geofences = new ArrayList<>();
 
         for (final Place place : getPlaces()) {
@@ -235,6 +240,27 @@ public class Registration implements Serializable {
         Log.d(TAG, "getGeofences() geofences: " + geofences);
 
         return geofences;
+    }
+
+    @Nullable
+    public Place getPlace(@NonNull final Location location) {
+        Log.d(TAG, "getPlace() location: " + location);
+
+        for (final Place place : getPlaces()) {
+            final double[] position = place.getP();
+            final double latitude = position[0];
+            final double longitude = position[1];
+
+            final Location locationOfInterest = new Location();
+            locationOfInterest.setLatitude(latitude);
+            locationOfInterest.setLongitude(longitude);
+
+            float distanceInMeters = locationOfInterest.distanceTo(location);
+
+            if (distanceInMeters < place.getO()) return place;
+        }
+
+        return null;
     }
 
     @Override

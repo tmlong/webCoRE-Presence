@@ -23,8 +23,10 @@ import com.google.android.gms.location.LocationServices;
 import com.longfocus.webcorepresence.MainActivity;
 import com.longfocus.webcorepresence.R;
 import com.longfocus.webcorepresence.dashboard.Registration;
+import com.longfocus.webcorepresence.dashboard.js.Place;
 import com.longfocus.webcorepresence.location.GeofencingReceiver.GeofencingAction;
 import com.longfocus.webcorepresence.location.LocationReceiver.LocationAction;
+import com.longfocus.webcorepresence.smartapp.request.Location;
 
 public class LocationService extends Service {
 
@@ -170,6 +172,25 @@ public class LocationService extends Service {
         startLocationUpdates();
     }
 
+    public void updateLocation(@NonNull final Location location) {
+        Log.d(TAG, "updateLocation()");
+
+        final Registration registration = getRegistration();
+
+        final Place currentPlace = registration.getPlace(location);
+
+        final boolean isHome = (currentPlace != null && currentPlace.isH());
+
+        final NotificationCompat.Builder builder = getNotificationBuilder()
+                .setSmallIcon(isHome ? R.drawable.ic_location_home_black_24dp : R.drawable.ic_location_searching_black_24dp)
+                .setContentTitle(currentPlace != null ? "Currently at " + currentPlace.getN() : null)
+                .setContentText(getString(R.string.location_updates_listening));
+
+        LocationReceiver.addPauseAction(this, builder);
+
+        getNotificationManager().notify(NOTIFICATION_ID, builder.build());
+    }
+
     private void notifyListening(@NonNull final LocationAction action) {
         Log.d(TAG, "notifyListening()");
 
@@ -293,13 +314,15 @@ public class LocationService extends Service {
     private void startInForeground() {
         Log.d(TAG, "startInForeground()");
 
-        final NotificationCompat.Builder builder = getBuilder();
+        final NotificationCompat.Builder builder = getNotificationBuilder()
+            .setSmallIcon(R.drawable.ic_location_searching_black_24dp)
+            .setContentText(getString(R.string.location_updates_listening));
 
         LocationReceiver.addPauseAction(this, builder);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             final CharSequence channelName = getString(R.string.location_service);
-            final String channelDescription = getString(R.string.location_listening_for_updates);
+            final String channelDescription = getString(R.string.location_updates_listening);
 
             final NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_LOW);
             channel.setDescription(channelDescription);
@@ -313,7 +336,9 @@ public class LocationService extends Service {
     private void stopInForeground(final boolean removeNotification) {
         Log.d(TAG, "stopInForeground()");
 
-        final NotificationCompat.Builder builder = getBuilder();
+        final NotificationCompat.Builder builder = getNotificationBuilder()
+            .setSmallIcon(R.drawable.ic_location_disabled_black_24dp)
+            .setContentText(getString(R.string.location_updates_paused));
 
         LocationReceiver.addResumeAction(this, builder);
 
@@ -323,15 +348,12 @@ public class LocationService extends Service {
     }
 
     @NonNull
-    private NotificationCompat.Builder getBuilder() {
+    private NotificationCompat.Builder getNotificationBuilder() {
         Log.d(TAG, "getBuilder()");
 
         final CharSequence appName = getString(R.string.app_name);
-        final CharSequence contextText = getString(R.string.location_listening_for_updates);
 
         final NotificationCompat.Builder builder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_location_searching_black_24dp)
-                .setContentText(contextText)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setContentIntent(getContentIntent())
                 .setAutoCancel(false);
