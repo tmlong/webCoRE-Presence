@@ -6,11 +6,13 @@ https://github.com/tmlong/webCoRE
 
 This app is an attempt to breathe new life into the webCoRE presence sensor to continue providing more consistent geofencing updates. This works with the webCoRE SmartApp for creating powerful location-based automation.
 
-<img src="https://i.imgur.com/GtXMZBt.png" width="180" height="320">
+<img src="https://i.imgur.com/whfxHI4.png" width="180" height="320"/>&nbsp;<img src="https://i.imgur.com/3iV7W84.png" width="180" height="320"/>&nbsp;<img src="https://i.imgur.com/GtXMZBt.png" width="180" height="320"/>
 
 ## Installation
 
 ### Device Handler
+
+> Requires the webCoRE SmartApp to be installed.
 
 1. Within the SmartThings IDE, click on *'My Device Handlers'*.
 1. Follow the steps below depending on how you install webCoRE.
@@ -53,8 +55,8 @@ This app is an attempt to breathe new life into the webCoRE presence sensor to c
 
 ### App
 
-<img src="https://i.imgur.com/snrMbMx.png" width="360" height="49">
-<img src="https://i.imgur.com/y4UC1xa.png" width="360" height="49">
+<img src="https://i.imgur.com/snrMbMx.png" width="360" height="49"/>
+<img src="https://i.imgur.com/y4UC1xa.png" width="360" height="49"/>
 
 * [![Add Presence Sensor](https://i.imgur.com/IhUEp9G.png "Add Presence Sensor")](#app) Add a presence sensor.
   * This option will overwrite the existing presence sensor, if one already exists.
@@ -70,9 +72,12 @@ This app is an attempt to breathe new life into the webCoRE presence sensor to c
 
 ### Notification
 
-<img src="https://i.imgur.com/97Jpbij.png" width="360" height="20">
+<img src="https://i.imgur.com/97Jpbij.png" width="360" height="20"/>
+<img src="https://i.imgur.com/MJs7lab.png" width="360" height="20"/>
+<img src="https://i.imgur.com/XEKfnmi.png" width="360" height="20"/>
 
-* [![Location Updates Started](https://i.imgur.com/CJVO5eU.png "Location Updates Started")](#notification) Location updates started.
+* [![Location Updates Started (Away)](https://i.imgur.com/CJVO5eU.png "Location Updates Started (Away)")](#notification) Location updates started (Away).
+* [![Location Updates Started (Home)](https://i.imgur.com/xUwOCC9.png "Location Updates Started (Home)")](#notification) Location updates started (Home).
 * [![Location Updates Stopped](https://i.imgur.com/fN6nkRq.png "Location Updates Stopped")](#notification) Location updates stopped.
 
 ## Links
