@@ -1,5 +1,7 @@
 package com.longfocus.webcorepresence.dashboard.client;
 
+import com.longfocus.webcorepresence.ParseUtils;
+
 public class Load {
 
     private String name;
@@ -28,5 +30,10 @@ public class Load {
 
     public void setNow(final long now) {
         this.now = now;
+    }
+
+    @Override
+    public String toString() {
+        return ParseUtils.toJson(this);
     }
 }

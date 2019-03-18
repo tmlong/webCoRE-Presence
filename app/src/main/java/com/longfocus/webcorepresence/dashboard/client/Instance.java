@@ -1,5 +1,7 @@
 package com.longfocus.webcorepresence.dashboard.client;
 
+import com.longfocus.webcorepresence.ParseUtils;
+
 public class Instance {
 
     private String id;
@@ -82,5 +84,10 @@ public class Instance {
 
     public void setToken(final String token) {
         this.token = token;
+    }
+
+    @Override
+    public String toString() {
+        return ParseUtils.toJson(this);
     }
 }
