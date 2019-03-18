@@ -159,6 +159,7 @@ public class DashboardClient extends WebViewClient {
             registration.setApiToken(registrationDecoded.getApiToken());
             registration.setAppId(registrationDecoded.getAppId());
             registration.setToken(token);
+            registration.setPlaces(registrationDecoded.getPlaces());
             registration.save(context);
 
             this.callback.handle(registration);
