@@ -51,7 +51,7 @@ This app is an attempt to breathe new life into the webCoRE presence sensor to c
 
 ## Options
 
-> Location updates are polled with a minimum interval of 10s and distance of 50m.
+> Location updates are polled with a minimum interval of 30s and distance of 100m.
 
 ### App
 
