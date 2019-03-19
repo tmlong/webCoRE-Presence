@@ -4,6 +4,10 @@
     <string name="location_updates_started">Location updates were started.</string>
     <string name="location_updates_stopped">Location updates were stopped.</string>
 
+    <string name="currently_at">Currently at %s</string>
+    <string name="currently_home">Currently Home</string>
+    <string name="currently_away">Currently Away</string>
+
     <string name="location_updates_listening">Listening for location updates…</string>
     <string name="location_updates_paused">Location updates are paused.</string>
 </resources>

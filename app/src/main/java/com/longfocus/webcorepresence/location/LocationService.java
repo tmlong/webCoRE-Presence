@@ -183,7 +183,8 @@ public class LocationService extends Service {
 
         final NotificationCompat.Builder builder = getNotificationBuilder()
                 .setSmallIcon(isHome ? R.drawable.ic_location_home_black_24dp : R.drawable.ic_location_searching_black_24dp)
-                .setContentTitle(currentPlace != null ? "Currently at " + currentPlace.getN() : null)
+                .setContentTitle(isHome ? getString(R.string.currently_home)
+                        : (currentPlace != null ? getString(R.string.currently_at, currentPlace.getN()) : getString(R.string.currently_away)))
                 .setContentText(getString(R.string.location_updates_listening));
 
         LocationReceiver.addPauseAction(this, builder);

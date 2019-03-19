@@ -154,6 +154,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void configureAddPresenceMenuItem(final Menu menu) {
+        Log.d(TAG, "configureAddPresenceMenuItem()");
+
         final MenuItem menuItem = menu.findItem(R.id.action_add_presence);
         final View actionView = menuItem.getActionView();
         final EditText editText = actionView.findViewById(R.id.editText_menu);
@@ -342,7 +344,11 @@ public class MainActivity extends AppCompatActivity {
 
             webViewDashboard.post(() -> webViewDashboard.setWebViewClient(null));
 
-            invalidateOptionsMenu();
+            if (hasLocationService()) {
+                invalidateOptionsMenu();
+            } else {
+                initLocation();
+            }
         }
     }
 
