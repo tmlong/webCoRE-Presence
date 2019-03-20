@@ -9,7 +9,6 @@ import android.util.Log;
 import android.webkit.JavascriptInterface;
 
 import com.longfocus.webcorepresence.ParseUtils;
-import com.longfocus.webcorepresence.dashboard.js.Place;
 import com.longfocus.webcorepresence.dashboard.js.Register;
 import com.longfocus.webcorepresence.dashboard.js.StatusRequest;
 import com.longfocus.webcorepresence.dashboard.js.StatusResponse;
@@ -43,14 +42,13 @@ public class DashboardInterface {
 
         final StatusRequest statusRequest = ParseUtils.fromJson(json, StatusRequest.class);
 
-        Log.d(TAG, "getStatus() request i: " + statusRequest.getI());
+        Log.d(TAG, "getStatus() request: " + statusRequest);
 
         final StatusResponse statusResponse = new StatusResponse();
         statusResponse.setDni(Secure.getString(context.getContentResolver(), Secure.ANDROID_ID));
         statusResponse.setS(Registration.getInstance(context).getDeviceId());
 
-        Log.d(TAG, "getStatus() response dni: " + statusResponse.getDni());
-        Log.d(TAG, "getStatus() response s: " + statusResponse.getS());
+        Log.d(TAG, "getStatus() response: " + statusResponse);
 
         return ParseUtils.toJson(statusResponse);
     }
@@ -61,13 +59,13 @@ public class DashboardInterface {
 
         final Register register = ParseUtils.fromJson(json, Register.class);
 
-        Log.d(TAG, "register() e: " + register.getE());
-        Log.d(TAG, "register() a: " + register.getA());
-        Log.d(TAG, "register() i: " + register.getI());
-        Log.d(TAG, "register() d: " + register.getD());
+        Log.d(TAG, "register() response: " + register);
+
+        final Uri endpoint = Uri.parse(register.getE());
+
+        Log.d(TAG, "register() endpoint: " + endpoint);
 
         // decode registration
-        final Uri endpoint = Uri.parse(register.getE());
         final Registration registrationDecoded = Registration.decode(endpoint);
 
         // save registration
@@ -88,17 +86,7 @@ public class DashboardInterface {
 
         final Update update = ParseUtils.fromJson(json, Update.class);
 
-        Log.d(TAG, "update() i: " + update.getI());
-
-        for (final Place place : update.getP()) {
-            Log.d(TAG, "update() p id: " + place.getId());
-            Log.d(TAG, "update() p n: " + place.getN());
-            Log.d(TAG, "update() p h: " + place.isH());
-            Log.d(TAG, "update() p i: " + place.getI());
-            Log.d(TAG, "update() p o: " + place.getO());
-            Log.d(TAG, "update() p p: " + place.getP());
-            Log.d(TAG, "update() p meta: " + place.getMeta());
-        }
+        Log.d(TAG, "update() response: " + update);
 
         final Registration registration = Registration.getInstance(context);
         registration.setPlaces(update.getP());

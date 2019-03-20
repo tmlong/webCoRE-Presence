@@ -3,6 +3,7 @@ package com.longfocus.webcorepresence.dashboard.js;
 import android.support.annotation.NonNull;
 
 import com.google.android.gms.location.Geofence;
+import com.longfocus.webcorepresence.ParseUtils;
 import com.longfocus.webcorepresence.smartapp.request.Location;
 
 import java.io.Serializable;
@@ -134,6 +135,11 @@ public class Place implements Serializable {
         location.setLongitude(longitude);
 
         return location;
+    }
+
+    @Override
+    public String toString() {
+        return ParseUtils.toJson(this);
     }
 
     private boolean hasPosition() {

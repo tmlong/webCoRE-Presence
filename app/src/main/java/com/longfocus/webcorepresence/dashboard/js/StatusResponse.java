@@ -1,5 +1,7 @@
 package com.longfocus.webcorepresence.dashboard.js;
 
+import com.longfocus.webcorepresence.ParseUtils;
+
 public class StatusResponse {
 
     private String dni; // host device id
@@ -19,5 +21,10 @@ public class StatusResponse {
 
     public void setS(final String s) {
         this.s = s;
+    }
+
+    @Override
+    public String toString() {
+        return ParseUtils.toJson(this);
     }
 }

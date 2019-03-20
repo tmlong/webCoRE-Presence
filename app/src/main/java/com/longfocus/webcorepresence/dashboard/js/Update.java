@@ -1,5 +1,7 @@
 package com.longfocus.webcorepresence.dashboard.js;
 
+import com.longfocus.webcorepresence.ParseUtils;
+
 public class Update {
 
     private String i; // instance id
@@ -19,5 +21,10 @@ public class Update {
 
     public void setP(final Place[] p) {
         this.p = p;
+    }
+
+    @Override
+    public String toString() {
+        return ParseUtils.toJson(this);
     }
 }

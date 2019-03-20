@@ -1,5 +1,7 @@
 package com.longfocus.webcorepresence.dashboard.js;
 
+import com.longfocus.webcorepresence.ParseUtils;
+
 import java.io.Serializable;
 
 public class Meta implements Serializable {
@@ -21,5 +23,10 @@ public class Meta implements Serializable {
 
     public void setP(final boolean p) {
         this.p = p;
+    }
+
+    @Override
+    public String toString() {
+        return ParseUtils.toJson(this);
     }
 }

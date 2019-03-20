@@ -1,5 +1,7 @@
 package com.longfocus.webcorepresence.dashboard.js;
 
+import com.longfocus.webcorepresence.ParseUtils;
+
 public class Register {
 
     private String e; // raw endpoint
@@ -37,5 +39,10 @@ public class Register {
 
     public void setD(final String d) {
         this.d = d;
+    }
+
+    @Override
+    public String toString() {
+        return ParseUtils.toJson(this);
     }
 }
