@@ -77,6 +77,8 @@ public class DashboardInterface {
         registration.setDeviceId(register.getD());
         registration.save(context);
 
+        callback.handle(registration);
+
         return null;
     }
 
@@ -91,8 +93,6 @@ public class DashboardInterface {
         final Registration registration = Registration.getInstance(context);
         registration.setPlaces(update.getP());
         registration.save(context);
-
-        callback.handle(registration);
 
         return null;
     }

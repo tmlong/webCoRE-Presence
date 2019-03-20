@@ -344,9 +344,9 @@ public class MainActivity extends AppCompatActivity {
 
             webViewDashboard.post(() -> webViewDashboard.setWebViewClient(null));
 
-            if (hasLocationService()) {
-                invalidateOptionsMenu();
-            } else {
+            invalidateOptionsMenu();
+
+            if (!hasLocationService()) {
                 initLocation();
             }
         }
@@ -377,7 +377,11 @@ public class MainActivity extends AppCompatActivity {
 
                 Log.d(TAG, "handle() registration: " + registration);
 
-                initLocation();
+                if (hasLocationService()) {
+                    locationService.startListening();
+                } else {
+                    initLocation();
+                }
             } catch (JsonParseException e) {
                 final Error error = ParseUtils.fromJson(json, Error.class);
                 Log.e(TAG, "handle() unable to parse the response: " + error.getError(), e);
