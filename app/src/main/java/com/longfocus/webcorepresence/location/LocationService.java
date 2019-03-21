@@ -32,7 +32,7 @@ public class LocationService extends Service {
 
     private static final String TAG = LocationService.class.getSimpleName();
 
-    private static final long LOCATION_INTERVAL = 30000L;
+    private static final long LOCATION_INTERVAL = 120000L;
     private static final float LOCATION_DISTANCE = 100f;
 
     private static final int NOTIFICATION_ID = 1034;
