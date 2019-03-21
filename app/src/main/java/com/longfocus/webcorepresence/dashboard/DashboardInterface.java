@@ -65,14 +65,8 @@ public class DashboardInterface {
 
         Log.d(TAG, "register() endpoint: " + endpoint);
 
-        // decode registration
-        final Registration registrationDecoded = Registration.decode(endpoint);
-
-        // save registration
         final Registration registration = Registration.getInstance(context);
-        registration.setHost(registrationDecoded.getHost());
-        registration.setApiToken(registrationDecoded.getApiToken());
-        registration.setAppId(registrationDecoded.getAppId());
+        registration.copySafe(Registration.decode(endpoint));
         registration.setInstanceId(register.getI());
         registration.setDeviceId(register.getD());
         registration.save(context);

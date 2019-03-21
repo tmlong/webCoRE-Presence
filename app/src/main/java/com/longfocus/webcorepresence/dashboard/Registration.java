@@ -21,6 +21,7 @@ import com.longfocus.webcorepresence.smartapp.request.Location;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static android.util.Base64.DEFAULT;
 
@@ -216,6 +217,21 @@ public class Registration implements Serializable {
         editor.commit();
     }
 
+    public void copySafe(@NonNull final Registration registration) {
+        Log.d(TAG, "copySafe() registration: " + registration);
+
+        setHost(Objects.toString(registration.getHost(), getHost()));
+        setApiToken(Objects.toString(registration.getApiToken(), getApiToken()));
+        setAppId(Objects.toString(registration.getAppId(), getAppId()));
+        setToken(Objects.toString(registration.getToken(), getToken()));
+        setInstanceId(Objects.toString(registration.getInstanceId(), getInstanceId()));
+        setDeviceId(Objects.toString(registration.getDeviceId(), getDeviceId()));
+
+        if (registration.getPlaces() != null) {
+            setPlaces(registration.getPlaces());
+        }
+    }
+
     @NonNull
     public Uri getUri() {
         Log.d(TAG, "getUri()");
@@ -256,6 +272,8 @@ public class Registration implements Serializable {
             locationOfInterest.setLongitude(longitude);
 
             float distanceInMeters = locationOfInterest.distanceTo(location);
+
+            Log.d(TAG, "getPlace() distanceInMeters: " + distanceInMeters);
 
             if (distanceInMeters < place.getO()) return place;
         }
